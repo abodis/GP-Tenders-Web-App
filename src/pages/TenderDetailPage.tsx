@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTenderDetail } from '@/hooks/useTenderDetail'
 import { useTenderDocuments } from '@/hooks/useTenderDocuments'
@@ -5,10 +6,12 @@ import { ApiError } from '@/api/client'
 import { getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
-import { ScoreBadge } from '@/components/ScoreBadge'
+import { RelevanceScoreVisual } from '@/components/RelevanceScoreVisual'
 import { StatusBadge } from '@/components/StatusBadge'
-import { formatBudget } from '@/utils/formatting'
+import { formatBudget, formatEur } from '@/utils/formatting'
+import { InfoTooltip } from '@/components/InfoTooltip'
 import { runIdToUrl } from '@/utils/links'
+import { cn } from '@/lib/utils'
 
 function formatBytes(bytes: number | null): string {
   if (bytes === null || bytes === 0) return '—'
@@ -26,6 +29,26 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
+function EligibilitySubGroup({ title, notes, numericContent }: {
+  title: string
+  notes: string | null
+  numericContent: React.ReactNode
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-medium">{title}</h3>
+        {notes && <InfoTooltip>{numericContent}</InfoTooltip>}
+      </div>
+      {notes ? (
+        <p className="text-sm text-muted-foreground">{notes}</p>
+      ) : (
+        <div className="text-sm">{numericContent}</div>
+      )}
+    </div>
+  )
+}
+
 export default function TenderDetailPage() {
   const { sourceId, tenderId } = useParams<{ sourceId: string; tenderId: string }>()
 
@@ -39,6 +62,8 @@ export default function TenderDetailPage() {
 
   const docs = useTenderDocuments(sourceId!, tenderId!)
   const documents = docs.data?.items ?? []
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false)
+  const [systemInfoExpanded, setSystemInfoExpanded] = useState(false)
 
   async function handleDownload(url: string) {
     await docs.refreshIfExpired()
@@ -88,137 +113,117 @@ export default function TenderDetailPage() {
         </div>
       )}
 
-      {/* Metadata */}
-      <section>
-        <h1 className="text-2xl font-bold">{tender.title}</h1>
-        <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <span>{tender.source_id}</span>
-          <span>·</span>
-          <span>{tender.tender_id}</span>
-          <span>·</span>
-          <StatusBadge status={tender.status} />
+      {/* Header */}
+      <section className="flex items-start gap-6">
+        <RelevanceScoreVisual score={tender.relevance_score} />
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold">{tender.title}</h1>
+          {tender.organization && (
+            <p className="mt-1 text-base text-muted-foreground">{tender.organization}</p>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-3">
+            {tender.status_name && <StatusBadge status={tender.status_name} />}
+            <span className="text-xs text-muted-foreground">{tender.source_id} · {tender.tender_id}</span>
+          </div>
         </div>
+      </section>
 
-        <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          <Field label="Organization">{tender.organization ?? '—'}</Field>
+      {/* Key Facts Grid */}
+      <section>
+        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           <Field label="Budget">{formatBudget(tender.budget)}</Field>
           <Field label="Deadline">{tender.deadline ?? '—'}</Field>
           <Field label="Location">{tender.location_names ?? '—'}</Field>
+          <Field label="Tender Type">{tender.tender_type ?? '—'}</Field>
+          <Field label="Posted Date">{tender.posted_date}</Field>
           <Field label="Sectors">{tender.sectors ?? '—'}</Field>
           <Field label="Types">{tender.types ?? '—'}</Field>
-          <Field label="Posted Date">{tender.posted_date}</Field>
-          <Field label="Status Name">{tender.status_name ?? '—'}</Field>
+          <Field label="Tags">
+            {tender.analysis_tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {tender.analysis_tags.map((tag) => (
+                  <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : '—'}
+          </Field>
         </dl>
       </section>
 
-      {/* Run Links */}
-      {(discoveredRunUrl || processedRunUrl) && (
+      {/* AI Assessment */}
+      {(tender.analysis_context || tender.analysis_summary) && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">Run Links</h2>
-          <div className="flex flex-wrap gap-4 text-sm">
-            {discoveredRunUrl && (
-              <Link to={discoveredRunUrl} className="text-primary underline">
-                Discovery Run
-              </Link>
-            )}
-            {processedRunUrl && (
-              <Link to={processedRunUrl} className="text-primary underline">
-                Processing Run
-              </Link>
+          <div className="flex items-baseline gap-3">
+            <h2 className="text-lg font-semibold">AI Assessment</h2>
+            {(tender.analysis_model || tender.analyzed_at) && (
+              <span className="text-xs text-muted-foreground">
+                {[tender.analysis_model, tender.analyzed_at].filter(Boolean).join(' · ')}
+              </span>
             )}
           </div>
-        </section>
-      )}
-
-      {/* Scraper Status */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">Scraper Status</h2>
-        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          <Field label="Status"><StatusBadge status={tender.status} /></Field>
-          <Field label="Retry Count">{tender.retry_count}</Field>
-          <Field label="Last Attempt">{tender.last_attempt ?? '—'}</Field>
-          <Field label="Last Error">{tender.last_error ?? '—'}</Field>
-          <Field label="Docs Downloaded">{tender.documents_downloaded}</Field>
-          <Field label="Docs Failed">{tender.documents_failed}</Field>
-          {tender.skip_reason && (
-            <Field label="Skip Reason">{tender.skip_reason}</Field>
+          {tender.analysis_context && (
+            <div className="mt-3">
+              <h3 className="mb-1 text-sm font-medium text-muted-foreground">Fit Analysis</h3>
+              <p className="text-sm whitespace-pre-wrap">{tender.analysis_context}</p>
+            </div>
           )}
-        </dl>
-      </section>
-
-      {/* Analysis */}
-      {tender.analyzed_at && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Analysis</h2>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="Relevance Score"><ScoreBadge score={tender.relevance_score} /></Field>
-            <Field label="Tender Type">{tender.tender_type ?? '—'}</Field>
-            <Field label="Model">{tender.analysis_model ?? '—'}</Field>
-            <Field label="Analyzed At">{tender.analyzed_at}</Field>
-            {tender.analysis_tags.length > 0 && (
-              <Field label="Tags">
-                <div className="flex flex-wrap gap-1">
-                  {tender.analysis_tags.map((tag) => (
-                    <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </Field>
-            )}
-          </dl>
           {tender.analysis_summary && (
-            <div className="mt-4">
+            <div className="mt-3">
               <h3 className="mb-1 text-sm font-medium text-muted-foreground">Summary</h3>
               <p className="text-sm whitespace-pre-wrap">{tender.analysis_summary}</p>
             </div>
           )}
-          {tender.analysis_context && (
-            <div className="mt-4">
-              <h3 className="mb-1 text-sm font-medium text-muted-foreground">Context</h3>
-              <p className="text-sm whitespace-pre-wrap">{tender.analysis_context}</p>
-            </div>
-          )}
         </section>
       )}
 
-      {/* Requirements: Experts */}
-      {tender.experts_required && (
+      {/* Eligibility */}
+      {(tender.experts_required || tender.references_required || tender.turnover_required) && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">Experts Required</h2>
-          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            <Field label="International">{tender.experts_required.international}</Field>
-            <Field label="Local">{tender.experts_required.local}</Field>
-            <Field label="Key Experts">{tender.experts_required.key_experts}</Field>
-            <Field label="Total">{tender.experts_required.total}</Field>
-            <Field label="Notes">{tender.experts_required.notes ?? '—'}</Field>
-          </dl>
-        </section>
-      )}
-
-      {/* Requirements: References */}
-      {tender.references_required && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">References Required</h2>
-          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            <Field label="Count">{tender.references_required.count}</Field>
-            <Field label="Type">{tender.references_required.type}</Field>
-            <Field label="Value (EUR)">{new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(tender.references_required.value_eur)}</Field>
-            <Field label="Timeline (Years)">{tender.references_required.timeline_years}</Field>
-            <Field label="Notes">{tender.references_required.notes ?? '—'}</Field>
-          </dl>
-        </section>
-      )}
-
-      {/* Requirements: Turnover */}
-      {tender.turnover_required && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Turnover Required</h2>
-          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <Field label="Annual (EUR)">{new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(tender.turnover_required.annual_eur)}</Field>
-            <Field label="Years">{tender.turnover_required.years}</Field>
-            <Field label="Notes">{tender.turnover_required.notes ?? '—'}</Field>
-          </dl>
+          <h2 className="mb-3 text-lg font-semibold">Eligibility Requirements</h2>
+          <div className="space-y-4">
+            {tender.experts_required && (
+              <EligibilitySubGroup
+                title="Experts Required"
+                notes={tender.experts_required.notes}
+                numericContent={
+                  <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
+                    <Field label="International">{tender.experts_required.international}</Field>
+                    <Field label="Local">{tender.experts_required.local}</Field>
+                    <Field label="Key Experts">{tender.experts_required.key_experts}</Field>
+                    <Field label="Total">{tender.experts_required.total}</Field>
+                  </dl>
+                }
+              />
+            )}
+            {tender.references_required && (
+              <EligibilitySubGroup
+                title="References Required"
+                notes={tender.references_required.notes}
+                numericContent={
+                  <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
+                    <Field label="Count">{tender.references_required.count}</Field>
+                    <Field label="Type">{tender.references_required.type}</Field>
+                    <Field label="Value">{formatEur(tender.references_required.value_eur)}</Field>
+                    <Field label="Timeline">{tender.references_required.timeline_years} years</Field>
+                  </dl>
+                }
+              />
+            )}
+            {tender.turnover_required && (
+              <EligibilitySubGroup
+                title="Turnover Required"
+                notes={tender.turnover_required.notes}
+                numericContent={
+                  <dl className="grid grid-cols-2 gap-2 text-sm">
+                    <Field label="Annual">{formatEur(tender.turnover_required.annual_eur)}</Field>
+                    <Field label="Years">{tender.turnover_required.years}</Field>
+                  </dl>
+                }
+              />
+            )}
+          </div>
         </section>
       )}
 
@@ -227,7 +232,15 @@ export default function TenderDetailPage() {
         <section>
           <h2 className="mb-3 text-lg font-semibold">Description</h2>
           <div className="rounded-lg border bg-muted/30 p-4">
-            <p className="text-sm whitespace-pre-wrap">{tender.description_text}</p>
+            <p className={cn("text-sm whitespace-pre-wrap", !descriptionExpanded && "line-clamp-6")}>
+              {tender.description_text}
+            </p>
+            <button
+              onClick={() => setDescriptionExpanded(!descriptionExpanded)}
+              className="mt-2 text-sm text-primary underline"
+            >
+              {descriptionExpanded ? 'Show less' : 'Show full description'}
+            </button>
           </div>
         </section>
       )}
@@ -272,6 +285,39 @@ export default function TenderDetailPage() {
               </tbody>
             </table>
           </div>
+        )}
+      </section>
+
+      {/* System Info */}
+      <section>
+        <button
+          onClick={() => setSystemInfoExpanded(!systemInfoExpanded)}
+          className="flex items-center gap-2 text-lg font-semibold"
+        >
+          <span className={cn("transition-transform", systemInfoExpanded && "rotate-90")}>▶</span>
+          System Info
+        </button>
+        {systemInfoExpanded && (
+          <dl className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <Field label="Scraper Status"><StatusBadge status={tender.status} /></Field>
+            <Field label="Retry Count">{tender.retry_count}</Field>
+            <Field label="Last Attempt">{tender.last_attempt ?? '—'}</Field>
+            <Field label="Last Error">{tender.last_error ?? '—'}</Field>
+            <Field label="Docs Downloaded">{tender.documents_downloaded}</Field>
+            <Field label="Docs Failed">{tender.documents_failed}</Field>
+            <Field label="Skip Reason">{tender.skip_reason ?? '—'}</Field>
+            <Field label="Discovery Run">
+              {discoveredRunUrl ? <Link to={discoveredRunUrl} className="text-primary underline">View</Link> : '—'}
+            </Field>
+            <Field label="Processing Run">
+              {processedRunUrl ? <Link to={processedRunUrl} className="text-primary underline">View</Link> : '—'}
+            </Field>
+            <Field label="Analysis Model">{tender.analysis_model ?? '—'}</Field>
+            <Field label="Analyzed At">{tender.analyzed_at ?? '—'}</Field>
+            <Field label="Emailed At">{tender.emailed_at ?? '—'}</Field>
+            <Field label="Source ID">{tender.source_id}</Field>
+            <Field label="Tender ID">{tender.tender_id}</Field>
+          </dl>
         )}
       </section>
     </div>

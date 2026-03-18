@@ -30,3 +30,7 @@ keywords: ["config", "aws", "project"]
 - Test: `npm run test` (vitest --run)
 - Lint: `npm run lint`
 - Output: `dist/` directory, deployed to S3
+- Infra: `./infra/deploy.sh --infra-only` (CDK, first time or infra changes)
+- Full deploy: `./infra/deploy.sh` (infra + build + S3 sync + CloudFront invalidation)
+- App only: `./infra/deploy.sh --app-only` (build + upload, no infra changes)
+- Domain: gptenders.novare.digital

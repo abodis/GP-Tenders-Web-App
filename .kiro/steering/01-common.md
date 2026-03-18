@@ -58,3 +58,5 @@ src/
 
 - **Mismatched API return types**: `getSources()` is typed as `Promise<SourceListItem[]>` but the API actually returns a paginated wrapper `{items: [...]}`. The `useSources` hook normalizes this via `select`. When adding new endpoints, verify the actual response shape matches the TypeScript type.
 - **Removing UI features instead of fixing data flow**: When list data is missing fields, check whether the API already provides them (or can trivially be updated to) before stripping columns from the UI.
+- **Displaying structured data over human-readable notes**: When API fields include both numeric/structured data and a `notes` field, prefer showing notes as the primary visible content. The structured data (counts, amounts, years) should be secondary (tooltip/hover). Notes capture the human-readable requirement; numbers are for verification.
+- **@base-ui/react import casing**: Subpath imports from `@base-ui/react` use lowercase module names (e.g. `@base-ui/react/tooltip`, `@base-ui/react/dialog`), not PascalCase. PascalCase paths will fail at build/test time with "not exported" errors.

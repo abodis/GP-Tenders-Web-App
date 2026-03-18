@@ -8,6 +8,18 @@ keywords: ["deploy", "s3", "cloudfront", "hosting"]
 
 This app is a static SPA built with Vite. It produces a `dist/` folder that can be uploaded directly to an S3 bucket and served via CloudFront.
 
+## Infrastructure as Code
+
+CDK Python project in `infra/` manages all hosting infrastructure:
+- `cert_stack.py` — ACM certificate (us-east-1)
+- `hosting_stack.py` — S3 + CloudFront + Route 53 + monitoring (eu-south-2)
+- `deploy.sh` — Full deploy: `./infra/deploy.sh` (or `--infra-only` / `--app-only`)
+- Outputs saved to `infra/cdk-outputs.json` after deploy
+
+Domain: `gptenders.novare.digital`
+Auth: CloudFront Function basic auth
+Monitoring: Route 53 health check → CloudWatch alarm → SNS email
+
 ## 1. Build
 
 Set the required environment variables before building:
@@ -89,3 +101,6 @@ Asset files in `assets/` have content hashes in their filenames, so they are saf
 ## 4. HTTPS
 
 CloudFront serves content over HTTPS by default. No additional configuration is needed for HTTPS support beyond the standard CloudFront distribution setup. To use a custom domain, attach an ACM certificate to the distribution.
+
+### Cross-Region Note
+ACM certificates for CloudFront **must** be created in `us-east-1`, even though the S3 origin bucket and CDK stack deploy to `eu-south-2`. This is an AWS requirement — CloudFront is a global service that only reads certs from us-east-1. The CDK stack handles this with a cross-region certificate construct.

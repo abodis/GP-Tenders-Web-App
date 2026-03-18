@@ -1,0 +1,8 @@
+{
+  "GptendersHostingStack": {
+    "DistributionDomain": "d1s6azjyf7m897.cloudfront.net",
+    "BucketName": "gptendershostingstack-webbucket12880f5b-pff49mp0e1p0",
+    "DistributionId": "EL3R57WOURTNQ",
+    "SiteUrl": "https://gptenders.novare.digital"
+  }
+}

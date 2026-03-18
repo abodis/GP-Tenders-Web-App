@@ -12,6 +12,7 @@ keywords: ["router", "index", "steering"]
 - **00-router.md** (this file)
 - **01-common.md** - Project conventions and tech stack
 - **project-config.md** - AWS profile, region, project settings
+- **company-profile.md** - Green Partners company profile, focus areas, preferred regions, and UX implications for tender evaluation
 
 ### Manual (load via #deployment in chat)
 - **deployment.md** - S3 + CloudFront deployment guide

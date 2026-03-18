@@ -49,3 +49,10 @@ export function formatBudget(budget: number): string {
 
   return eurFormatter.format(budget)
 }
+
+/**
+ * Formats a numeric value as a EUR currency string.
+ */
+export function formatEur(value: number): string {
+  return eurFormatter.format(value)
+}
