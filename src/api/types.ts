@@ -3,6 +3,7 @@
 export interface PaginatedResponse<T> {
   items: T[]
   count: number
+  total_count: number | null
   next_cursor: string | null
 }
 
@@ -23,6 +24,7 @@ export interface TenderListItem {
   status: string
   fully_visible: boolean
   budget: number
+  currency: string | null
   status_name: string | null
   location_names: string | null
   sectors: string | null
@@ -139,6 +141,7 @@ export interface TenderListParams {
   min_score?: string
   tender_type?: string
   sort_by?: string
+  sort_direction?: string
   page_size?: string
   cursor?: string
 }

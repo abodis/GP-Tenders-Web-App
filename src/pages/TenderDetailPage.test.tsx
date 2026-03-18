@@ -26,6 +26,7 @@ function buildMockTender(warnings: string[]): TenderDetailResponse {
     status: 'completed',
     fully_visible: true,
     budget: 0,
+    currency: null,
     status_name: null,
     location_names: null,
     sectors: null,

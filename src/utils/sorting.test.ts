@@ -46,6 +46,7 @@ const tenderListItemArb = fc
       status: 'completed',
       fully_visible: true,
       budget,
+      currency: null,
       status_name: null,
       location_names: null,
       sectors: null,

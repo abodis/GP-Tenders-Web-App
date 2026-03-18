@@ -50,8 +50,9 @@ All list endpoints return:
 ```ts
 interface PaginatedResponse<T> {
   items: T[];
-  count: number;          // items in this page
-  next_cursor: string | null; // pass as ?cursor= for next page
+  count: number;               // items in this page
+  total_count: number | null;  // total items matching filters (before pagination); null when unavailable
+  next_cursor: string | null;  // pass as ?cursor= for next page
 }
 ```
 
@@ -97,7 +98,8 @@ Query params:
 | `analyzed` | bool | — | `true` = analyzed only, `false` = unanalyzed only |
 | `min_score` | int | — | Minimum `relevance_score` (0–10) |
 | `tender_type` | string | — | Exact match: `request_to_participate`, `expression_of_interest`, `full_proposal` |
-| `sort_by` | string | — | Only `relevance_score` supported; omit for default `discovered_at` desc. Returns 400 for invalid values |
+| `sort_by` | string | — | `relevance_score`, `budget`, or `deadline`; omit for default `discovered_at` desc. Returns 400 for invalid values |
+| `sort_direction` | string | `desc` | `asc` or `desc`. Applies to `sort_by` field; nulls always sort last regardless of direction |
 | `page_size` | int | 20 | 1–100 |
 | `cursor` | string | — | Pagination token |
 
@@ -114,6 +116,7 @@ interface TenderListItem {
   status: string;
   fully_visible: boolean;
   budget: number;              // EUR, 0 = not specified
+  currency: string | null;     // original currency code, e.g. "EUR", "USD"
   status_name: string | null;  // "open", "closed", "awarded"
   location_names: string | null;
   sectors: string | null;
@@ -134,6 +137,7 @@ Example calls:
 ```
 GET /tenders?discovered_from=2026-03-01&discovered_to=2026-03-17&page_size=50
 GET /tenders?analyzed=true&min_score=6&sort_by=relevance_score
+GET /tenders?sort_by=deadline&sort_direction=asc
 GET /tenders?source_id=developmentaid-org&status=completed&fully_visible=true
 GET /tenders?tender_type=full_proposal&analyzed=true
 ```
@@ -269,9 +273,12 @@ All errors return `{"detail": "...", "status_code": N}`.
 
 ## Sorting Behavior
 
-- Default: `discovered_at` descending (newest first)
-- `sort_by=relevance_score`: descending score, tenders with `null` score sort last
-- No other sort fields are currently supported
+- Default: `discovered_at` descending (newest first) — `sort_direction` does not apply to the default sort
+- `sort_by=relevance_score`: score order, nulls sort last. Default direction: `desc`
+- `sort_by=budget`: numeric order, `0` (not specified) treated as null and sorts last. Default direction: `desc`
+- `sort_by=deadline`: ISO date string order, nulls sort last. Default direction: `desc`
+- All three support `sort_direction=asc` or `sort_direction=desc`
+- Any other `sort_by` value returns 400
 
 ## Analysis Fields
 
