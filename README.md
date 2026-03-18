@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# GP Tenders Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Read-only internal SPA for browsing scraper operations and reviewing tender results with AI-generated analysis scores.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+cp .env.example .env
+# Fill in VITE_API_BASE_URL and VITE_API_KEY
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server with HMR |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview production build locally |
+| `npm run test` | Run tests (single execution) |
+| `npm run lint` | Lint with ESLint |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Tech Stack
+
+- React 19 + TypeScript 5.9
+- Vite 8
+- Tailwind CSS 4 + shadcn/ui
+- TanStack Query v5
+- React Router v6
+
+## Project Structure
+
 ```
+src/
+├── api/          # API client, endpoints, types
+├── components/   # Shared UI components
+│   └── ui/       # shadcn/ui primitives
+├── hooks/        # TanStack Query custom hooks
+├── layouts/      # App shell / navigation
+├── pages/        # Route page components
+├── utils/        # Pure utility functions
+└── test/         # Test setup
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_BASE_URL` | Scraper REST API base URL |
+| `VITE_API_KEY` | API Gateway key (sent as `x-api-key` header) |
+
+## Deployment
+
+Static SPA deployed to S3 + CloudFront. See deployment steering file in `.kiro/steering/` for details.

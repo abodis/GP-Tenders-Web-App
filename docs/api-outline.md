@@ -215,25 +215,16 @@ Full source config (sanitized). Includes `api_endpoints`, `auth` (no secrets), `
 
 Paginated run list, newest first. Params: `page_size`, `cursor`.
 
+Both the list and detail endpoints return the same shape:
+
 ```ts
-interface RunListItem {
+interface RunItem {
   pk: string;
   source_id: string;
   run_date: string;
   started_at: string;
   completed_at: string | null;
   status: string;  // "running", "success", "partial_failure", "failed"
-}
-```
-
----
-
-### GET /sources/{source_id}/runs/{run_date}
-
-Single run with collector/retriever statistics.
-
-```ts
-interface RunDetailResponse extends RunListItem {
   collector_result: {
     total_found: number;
     new_tenders: number;
@@ -252,6 +243,12 @@ interface RunDetailResponse extends RunListItem {
   } | null;
 }
 ```
+
+---
+
+### GET /sources/{source_id}/runs/{run_date}
+
+Single run. Returns the same `RunItem` shape as the list endpoint above.
 
 ---
 

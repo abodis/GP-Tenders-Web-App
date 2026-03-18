@@ -1,0 +1,12 @@
+{
+  "name": "Session Reflection",
+  "version": "1.0.0",
+  "description": "Capture learnings at end of sessions for compound engineering",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before ending, briefly assess this session:\n\n1. Were there any mistakes, corrections, or misunderstandings?\n2. Did the user have to clarify or correct anything?\n3. Were there inefficiencies or repeated attempts?\n4. Any new patterns or constraints discovered?\n\nIf YES to any: Propose a specific steering file update using this format:\n📝 LEARNING: [brief description]\nFile: .kiro/steering/[path]\nAction: ADD | MODIFY\nContent: [exact text - keep concise]\n\nIf NO learnings needed, simply say: \"No steering updates needed this session.\""
+  }
+}
