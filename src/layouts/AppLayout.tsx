@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils'
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <nav className="border-b bg-background">
+      <nav className="border-b border-primary/20 bg-background">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4">
-          <span className="flex items-center gap-2 text-lg font-semibold">
+          <span className="flex items-center gap-2 text-lg font-semibold text-primary">
             <img src="/logo.svg" alt="" className="h-6 w-6" aria-hidden="true" />
             GP Tenders
           </span>
@@ -14,8 +14,8 @@ export default function AppLayout() {
             to="/tenders"
             className={({ isActive }) =>
               cn(
-                'text-sm font-medium transition-colors hover:text-foreground',
-                isActive ? 'text-foreground' : 'text-muted-foreground',
+                'text-sm font-medium transition-colors hover:text-primary',
+                isActive ? 'text-primary' : 'text-muted-foreground',
               )
             }
           >
@@ -25,8 +25,8 @@ export default function AppLayout() {
             to="/runs"
             className={({ isActive }) =>
               cn(
-                'text-sm font-medium transition-colors hover:text-foreground',
-                isActive ? 'text-foreground' : 'text-muted-foreground',
+                'text-sm font-medium transition-colors hover:text-primary',
+                isActive ? 'text-primary' : 'text-muted-foreground',
               )
             }
           >
@@ -36,8 +36,8 @@ export default function AppLayout() {
             to="/settings"
             className={({ isActive }) =>
               cn(
-                'text-sm font-medium transition-colors hover:text-foreground',
-                isActive ? 'text-foreground' : 'text-muted-foreground',
+                'text-sm font-medium transition-colors hover:text-primary',
+                isActive ? 'text-primary' : 'text-muted-foreground',
               )
             }
           >

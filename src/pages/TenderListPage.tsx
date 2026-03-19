@@ -243,7 +243,12 @@ export default function TenderListPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Tenders</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Tenders</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Browse and filter discovered tenders, review relevance scores and analysis results.
+        </p>
+      </div>
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-end gap-3">

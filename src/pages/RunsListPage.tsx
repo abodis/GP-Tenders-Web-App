@@ -30,7 +30,12 @@ export default function RunsListPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Runs</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Runs</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Monitor nightly scraper runs, track collection and retrieval results.
+          </p>
+        </div>
         <select
           value={sourceFilter ?? ''}
           onChange={(e) => setSourceFilter(e.target.value || null)}
