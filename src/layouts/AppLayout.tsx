@@ -32,6 +32,17 @@ export default function AppLayout() {
           >
             Runs
           </NavLink>
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              cn(
+                'text-sm font-medium transition-colors hover:text-foreground',
+                isActive ? 'text-foreground' : 'text-muted-foreground',
+              )
+            }
+          >
+            Settings
+          </NavLink>
         </div>
       </nav>
       <main className="mx-auto max-w-7xl px-4 py-6">

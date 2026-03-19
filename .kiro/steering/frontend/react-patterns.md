@@ -43,6 +43,13 @@ export function useTenderDetail(sourceId: string, tenderId: string) {
 }
 ```
 
+## Mutations (PUT)
+
+- Use `apiPut` from `src/api/client.ts` for write operations
+- Wrap in `useMutation` from TanStack Query — never call `apiPut` directly from components
+- On success, invalidate the relevant query key to refresh cached data
+- Pattern: `useMutation({ mutationFn: (body) => putSetting(type, body), onSuccess: () => queryClient.invalidateQueries({ queryKey }) })`
+
 ## Error Handling in Components
 
 - Use TanStack Query's `isError` / `error` for API errors

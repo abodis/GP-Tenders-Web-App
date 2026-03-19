@@ -169,7 +169,7 @@ export default function TenderListPage() {
   }
 
   // --- Date preset handler ---
-  function handleDatePreset(presetLabel: string) {
+  function handleDatePreset(presetLabel: string | null) {
     if (presetLabel === '__clear__') {
       updateFilters({ discovered_from: '', discovered_to: '' })
       return
@@ -288,7 +288,7 @@ export default function TenderListPage() {
 
         <Select
           value={status || '__all__'}
-          onValueChange={(v) => updateFilters({ status: v === '__all__' ? '' : v })}
+          onValueChange={(v) => updateFilters({ status: v === '__all__' ? '' : v ?? '' })}
           items={STATUS_OPTIONS.map((opt) => ({
             value: opt.value || '__all__',
             label: opt.label,
@@ -306,7 +306,7 @@ export default function TenderListPage() {
 
         <Select
           value={sourceId || '__all__'}
-          onValueChange={(v) => updateFilters({ source_id: v === '__all__' ? '' : v })}
+          onValueChange={(v) => updateFilters({ source_id: v === '__all__' ? '' : v ?? '' })}
           items={[
             { value: '__all__', label: 'All sources' },
             ...(sources?.map((s) => ({ value: s.source_id, label: s.source_id })) ?? []),

@@ -1,4 +1,4 @@
-import { apiFetch } from '@/api/client'
+import { apiFetch, apiPut } from '@/api/client'
 import type {
   PaginatedResponse,
   PaginationParams,
@@ -8,6 +8,9 @@ import type {
   TenderListItem,
   TenderListParams,
   DocumentItem,
+  SettingsListResponse,
+  SettingType,
+  SettingResponse,
 } from '@/api/types'
 
 export function getTenders(
@@ -63,4 +66,15 @@ export function getRunTenders(
     `/sources/${sourceId}/runs/${runDate}/tenders`,
     { phase, ...(params ? { ...params } : {}) },
   )
+}
+
+export function getSettings(): Promise<SettingsListResponse> {
+  return apiFetch<SettingsListResponse>('/settings')
+}
+
+export function putSetting<T extends SettingResponse>(
+  type: SettingType,
+  body: Omit<T, 'setting_type' | 'updated_at'>,
+): Promise<T> {
+  return apiPut<T>(`/settings/${type}`, body)
 }

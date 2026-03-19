@@ -16,7 +16,7 @@ Quick reference for the `rfp-web` React SPA. Covers authentication, CORS, endpoi
 The API allows cross-origin requests from any origin. Configuration:
 
 - `Access-Control-Allow-Origin: *`
-- Allowed methods: `GET`, `OPTIONS`
+- Allowed methods: `GET`, `PUT`, `OPTIONS`
 - Allowed headers: `x-api-key`, `Content-Type`
 - OPTIONS preflight is handled at API Gateway level (no auth required)
 
@@ -24,6 +24,7 @@ Your fetch calls just need the `x-api-key` header:
 
 ```ts
 const API_BASE = "https://sj7ac51cyi.execute-api.eu-south-2.amazonaws.com";
+const headers = { "x-api-key": import.meta.env.VITE_API_KEY, "Content-Type": "application/json" };
 
 async function apiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
   const url = new URL(path, API_BASE);
@@ -32,12 +33,23 @@ async function apiFetch<T>(path: string, params?: Record<string, string>): Promi
       if (v !== undefined && v !== null) url.searchParams.set(k, v);
     });
   }
-  const res = await fetch(url.toString(), {
-    headers: { "x-api-key": import.meta.env.VITE_API_KEY },
-  });
+  const res = await fetch(url.toString(), { headers });
   if (!res.ok) {
     const body = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(body.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(new URL(path, API_BASE).toString(), {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -167,9 +179,9 @@ interface TenderDetailResponse extends TenderListItem {
   analysis_context: string | null;
   analysis_model: string | null;
   emailed_at: string | null;
-  experts_required: object | null;     // {count, categories}
-  references_required: object | null;  // {count, min_value_eur}
-  turnover_required: object | null;    // {min_annual_eur, years}
+  experts_required: object | null;     // {international, local, key_experts, total, notes}
+  references_required: object | null;  // {count, type, value_eur, timeline_years, notes}
+  turnover_required: object | null;    // {annual_eur, years, notes}
 }
 ```
 
@@ -192,6 +204,88 @@ interface DocumentItem {
 ### GET /tenders/{source_id}/{tender_id}/documents/{filename}
 
 Single document presigned URL: `{"filename": "...", "url": "..."}`.
+
+---
+
+### GET /settings
+
+List all settings. Returns only items that exist in DynamoDB (missing items are omitted, not returned as null).
+
+Response:
+
+```ts
+interface SettingsListResponse {
+  items: SettingResponse[];
+  count: number;  // equals items.length
+}
+```
+
+When no settings exist, returns `{ items: [], count: 0 }`.
+
+---
+
+### GET /settings/{setting_type}
+
+Get a single setting. Valid types: `selection-criteria`, `analysis`, `company-profile`, `recipients`.
+
+Response: `SettingResponse` (see below). Returns 404 if the setting doesn't exist, 400 if the type is invalid.
+
+---
+
+### PUT /settings/{setting_type}
+
+Full replacement of a setting. The `updated_at` field is set server-side (any client-provided value is ignored).
+
+Request bodies per type:
+
+**selection-criteria:**
+```json
+{
+  "min_budget_eur": 20000,
+  "max_budget_eur": 2000000,
+  "min_days_publish_to_deadline": 5,
+  "locations_include": ["europe", "Global"],
+  "status_include": ["open"]
+}
+```
+
+**analysis:**
+```json
+{
+  "score_threshold_for_email": 5,
+  "max_tenders_per_run": 1000,
+  "scoring_criteria": ["sector fit", "geographic fit"]
+}
+```
+
+**company-profile:**
+```json
+{
+  "company_name": "Acme Corp",
+  "description": "Environmental consultancy",
+  "focus_areas": ["waste management"],
+  "preferred_regions": ["Eastern Europe"],
+  "typical_budget_range": { "min_eur": 50000, "max_eur": 2000000 },
+  "typical_team_size": "3-10 experts"
+}
+```
+
+**recipients:**
+```json
+{
+  "recipients": ["user@example.com"]
+}
+```
+
+Response: `SettingResponse` with server-set `updated_at`. Returns 400 for invalid type or validation errors.
+
+```ts
+interface SettingResponse {
+  setting_type: string;
+  updated_at: string;  // ISO 8601 UTC, server-set
+  // ... all fields from the corresponding request body
+}
+```
 
 ---
 
@@ -295,9 +389,9 @@ Detail-only fields (only on `GET /tenders/{source_id}/{tender_id}`):
 - `analysis_context` — context/keywords used for analysis
 - `analysis_model` — LLM model identifier
 - `emailed_at` — when the tender was included in an email digest
-- `experts_required` — structured extraction: `{count, categories}`
-- `references_required` — structured extraction: `{count, min_value_eur}`
-- `turnover_required` — structured extraction: `{min_annual_eur, years}`
+- `experts_required` — structured extraction: `{international, local, key_experts, total, notes}`
+- `references_required` — structured extraction: `{count, type, value_eur, timeline_years, notes}`
+- `turnover_required` — structured extraction: `{annual_eur, years, notes}`
 
 ## Presigned URL Expiry
 

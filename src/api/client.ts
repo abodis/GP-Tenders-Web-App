@@ -44,3 +44,32 @@ export async function apiFetch<T>(
 
   return res.json() as Promise<T>
 }
+
+export async function apiPut<T>(
+  path: string,
+  body: unknown,
+): Promise<T> {
+  const url = new URL(path, API_BASE)
+
+  const res = await fetch(url.toString(), {
+    method: 'PUT',
+    headers: {
+      'x-api-key': API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    let detail: string
+    try {
+      const err = await res.json()
+      detail = err.detail ?? res.statusText
+    } catch {
+      detail = res.statusText
+    }
+    throw new ApiError(detail, res.status)
+  }
+
+  return res.json() as Promise<T>
+}

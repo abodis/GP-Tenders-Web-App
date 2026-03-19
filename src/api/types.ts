@@ -150,3 +150,53 @@ export interface PaginationParams {
   page_size?: string
   cursor?: string
 }
+
+// === Settings ===
+
+export type SettingType = 'selection-criteria' | 'analysis' | 'company-profile' | 'recipients'
+
+export interface SelectionCriteriaSettings {
+  setting_type: 'selection-criteria'
+  updated_at: string
+  min_budget_eur: number
+  max_budget_eur: number
+  min_days_publish_to_deadline: number
+  locations_include: string[]
+  status_include: string[]
+}
+
+export interface AnalysisSettings {
+  setting_type: 'analysis'
+  updated_at: string
+  score_threshold_for_email: number
+  max_tenders_per_run: number
+  scoring_criteria: string[]
+}
+
+export interface CompanyProfileSettings {
+  setting_type: 'company-profile'
+  updated_at: string
+  company_name: string
+  description: string
+  focus_areas: string[]
+  preferred_regions: string[]
+  typical_budget_range: { min_eur: number; max_eur: number }
+  typical_team_size: string
+}
+
+export interface RecipientsSettings {
+  setting_type: 'recipients'
+  updated_at: string
+  recipients: string[]
+}
+
+export type SettingResponse =
+  | SelectionCriteriaSettings
+  | AnalysisSettings
+  | CompanyProfileSettings
+  | RecipientsSettings
+
+export interface SettingsListResponse {
+  items: SettingResponse[]
+  count: number
+}
