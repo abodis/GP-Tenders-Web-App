@@ -24,7 +24,8 @@ GSIs:
 | `status` | string | always | insert/update | `pending` → `completed` / `failed` → `permanently_failed` / `skipped` |
 | `retry_count` | int | always | insert (0) | Incremented on each failure |
 | `fully_visible` | bool | optional | insert | `true` = free tender, `false` = locked (costs a credit) |
-| `budget` | int | optional | insert | EUR amount; `0` = not specified |
+| `budget` | int | optional | insert/update | EUR amount; `0` = not specified. Set at insert from search metadata, updated on detail retrieval |
+| `currency` | string | optional | update | Original currency code from detail API (e.g. `"EUR"`, `"USD"`); `null` if not specified |
 | `organization` | string | optional | insert | Abbreviated donor name |
 | `location_names` | string | optional | insert | Comma-separated, e.g. `"Romania, Moldova"` |
 | `status_name` | string | optional | insert | Source status label, e.g. `"open"`, `"closed"` |
@@ -39,6 +40,17 @@ GSIs:
 | `documents_downloaded` | int | optional | update | Count of successfully downloaded docs |
 | `documents_failed` | int | optional | update | Count of failed doc downloads |
 | `processed_run_id` | string | optional | update | `{source_id}#{run_date}` linking to the retrieval run |
+| `relevance_score` | int | optional | analyzer | 0–10 relevance score |
+| `analysis_summary` | string | optional | analyzer | AI-generated summary |
+| `analysis_tags` | list | optional | analyzer | Classification tags |
+| `tender_type` | string | optional | analyzer | e.g. `"request_to_participate"`, `"expression_of_interest"`, `"full_proposal"` |
+| `analyzed_at` | string | optional | analyzer | ISO datetime when analysis completed |
+| `analysis_context` | string | optional | analyzer | Context used for analysis |
+| `analysis_model` | string | optional | analyzer | LLM model identifier |
+| `emailed_at` | string | optional | analyzer | ISO datetime when email digest sent |
+| `experts_required` | map | optional | analyzer | Structured extraction of expert requirements |
+| `references_required` | map | optional | analyzer | Structured extraction of reference requirements |
+| `turnover_required` | map | optional | analyzer | Structured extraction of turnover requirements |
 
 ### Status Lifecycle
 
@@ -98,6 +110,10 @@ Query params:
 - `discovered_from` / `discovered_to` (optional) — ISO date range on `discovered_at`
 - `status` (optional) — filter by status
 - `fully_visible` (optional) — boolean filter
+- `analyzed` (optional) — boolean, filter by analysis status
+- `min_score` (optional) — integer, minimum relevance_score
+- `tender_type` (optional) — string, exact match on tender_type
+- `sort_by` (optional) — string, only `relevance_score` supported; returns 400 for invalid values
 - `page_size` (optional, default 20, max 100)
 - `cursor` (optional) — opaque pagination token from previous response
 
@@ -118,7 +134,13 @@ Each item in `items`:
   "location_names": "Romania, Moldova",
   "sectors": "Statistics and data analysis",
   "types": "Consulting services",
-  "documents_total": 3
+  "documents_total": 3,
+  "relevance_score": 8,
+  "analysis_summary": "Consulting services for statistical capacity building...",
+  "analysis_tags": ["statistics", "capacity-building"],
+  "tender_type": "full_proposal",
+  "analyzed_at": "2026-03-16T14:30:00",
+  "organization": "World Bank"
 }
 ```
 
@@ -143,9 +165,23 @@ Full tender detail. Returns all fields from the list item plus:
   "processed_run_id": "developmentaid-org#2026-03-15",
   "detail": { "...raw detail.json from S3..." },
   "description_text": "Plain text description...",
-  "warnings": ["Failed to load .../detail.json"]
+  "warnings": ["Failed to load .../detail.json"],
+  "relevance_score": 8,
+  "analysis_summary": "Consulting services for statistical capacity building...",
+  "analysis_tags": ["statistics", "capacity-building"],
+  "tender_type": "full_proposal",
+  "analyzed_at": "2026-03-16T14:30:00",
+  "organization": "World Bank",
+  "analysis_context": "Matched keywords: statistics, data analysis...",
+  "analysis_model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
+  "emailed_at": "2026-03-16T15:00:00",
+  "experts_required": {"count": 3, "categories": ["senior statistician", "data analyst"]},
+  "references_required": {"count": 2, "min_value_eur": 500000},
+  "turnover_required": {"min_annual_eur": 1000000, "years": 3}
 }
 ```
+
+Analysis fields are nullable — they are only present for tenders that have been processed by the analyzer service. Unanalyzed tenders will have `null` for scalar analysis fields and `[]` for `analysis_tags`.
 
 - `detail` — full raw API response from S3 (null if not completed or S3 read fails)
 - `description_text` — plain text extracted from HTML description (null if unavailable)

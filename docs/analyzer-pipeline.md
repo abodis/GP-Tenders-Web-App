@@ -37,12 +37,13 @@ EventBridge (rate: 1 day)
 │ TriggerLambda │
 │ (60s timeout) │
 └───────┬───────┘
-        │ {tenders: [...]}
+        │ {tenders: [{source_id, tender_id}, ...]}
         ▼
 ┌───────────────────────┐
 │ Map: AnalyzeEachTender│
-│ max_concurrency: 5    │
+│ max_concurrency: 2    │
 │ items_path: $.tenders │
+│ result_path: DISCARD  │
 │                       │
 │  ┌─────────────────┐  │
 │  │ AnalyzerLambda  │  │
@@ -60,7 +61,7 @@ EventBridge (rate: 1 day)
     └──────────────┘
 ```
 
-Individual tender analysis failures are caught by the ItemCatcher and don't abort the batch. The Email Lambda always runs, even if some analyses failed.
+Individual tender analysis failures are caught by the ItemCatcher and don't abort the batch. The Map state discards its output (`result_path: DISCARD`), so the Email Lambda receives the original Trigger output (the tender list), not the individual analyzer results. The Email Lambda always runs, even if some analyses failed.
 
 ## Phase 1: Trigger
 
@@ -72,7 +73,7 @@ The Trigger Lambda (`src/handlers/trigger.py`) identifies which tenders need ana
 4. Batch-check DynamoDB (`BatchGetItem`, 100 keys per call) to filter out tenders that already have `analyzed_at` set.
 5. Apply `SelectionCriteria` to each remaining tender (see below).
 6. Write filtered-out tenders to DynamoDB with `relevance_score=0` and `analysis_model="selection-filter"` so they aren't re-processed.
-7. Return the passing tenders, capped at `max_tenders_per_run` (default: 50).
+7. Return slim tender references (only `source_id` and `tender_id`) for passing tenders, capped at `max_tenders_per_run` (default: 1000). Full tender data is not passed through Step Functions — the Analyzer Lambda fetches detail independently from the scraper API. This keeps the payload well within the Step Functions 256KB limit.
 
 ### Selection Criteria
 
@@ -116,7 +117,7 @@ The analyzer supports two LLM backends, selected by `settings.llm.provider`:
 
 | Provider | Endpoint | Auth | Model (current) |
 |----------|----------|------|-----------------|
-| Fireworks | `https://api.fireworks.ai/inference/v1/chat/completions` | Bearer token (Secrets Manager) | `llama-v3p1-70b-instruct` |
+| Fireworks | `https://api.fireworks.ai/inference/v1/chat/completions` | Bearer token (Secrets Manager) | `llama-v3p3-70b-instruct` |
 | Bedrock | `bedrock-runtime` (boto3, eu-central-1) | IAM role | `anthropic.claude-3-haiku-20240307-v1:0` |
 
 Both adapters use the same prompt builder and response parser. The `LLMProvider` abstract interface ensures they're interchangeable.
@@ -125,8 +126,10 @@ Both adapters use the same prompt builder and response parser. The `LLMProvider`
 
 LLM calls are wrapped in `call_with_retry` with exponential backoff:
 - Max retries: 3
-- Intervals: 2s, 4s, 8s
+- Intervals: 3s, 8s, 15s
 - Retryable errors: `RateLimitError`, `TimeoutError`, `ConnectionError`
+
+The Fireworks adapter explicitly detects HTTP 429 responses and raises `RateLimitError` before `raise_for_status()`, ensuring rate-limit responses are retried rather than surfacing as generic HTTP errors.
 
 On exhaustion, the last error propagates and the Map state's ItemCatcher records the failure.
 
@@ -215,14 +218,25 @@ All Lambdas run Python 3.12 on ARM64. Code is bundled via Docker with `requireme
 | Email | `dynamodb:Query`, `dynamodb:Scan`, `dynamodb:UpdateItem` | `rfp-tenders` table |
 | Email | `ses:SendEmail` | `*` |
 
+### Alerting
+
+An SNS topic (`rfp-analyzer-alerts-dev`) delivers alarm notifications via email. Three CloudWatch alarms are configured:
+
+| Alarm | Metric | Condition | Notes |
+|-------|--------|-----------|-------|
+| `rfp-analyzer-no-execution-dev` | `ExecutionsStarted` (state machine) | < 1 in 26 hours | Missing data treated as breaching; detects pipeline not running |
+| `rfp-analyzer-execution-failed-dev` | `ExecutionsFailed` (state machine) | ≥ 1 in 5 min | Fires on failed, timed-out, or aborted executions |
+| `rfp-analyzer-analyzer-errors-dev` | `Errors` (Analyzer Lambda) | ≥ 1 in 5 min | Individual tender analysis failures (caught by ItemCatcher) |
+
 ### Other Resources
 
 | Resource | Type | Notes |
 |----------|------|-------|
 | `rfp-analyzer-pipeline-dev` | Step Functions (Standard) | Orchestrates the three Lambdas |
 | `rfp-analyzer-schedule-dev` | EventBridge Rule | `rate(1 day)` → triggers the state machine |
+| `rfp-analyzer-alerts-dev` | SNS Topic | Email subscription for alarm notifications |
 | CloudWatch Log Groups | 30-day retention | One per Lambda |
 | `rfp-analyzer/fireworks-api-key` | Secrets Manager | Fireworks LLM API key |
 | `rfp-analyzer/scraper-api-key` | Secrets Manager | Scraper API key (CDK-managed, but pipeline uses SSM) |
 
-Region: `eu-south-2` (except Bedrock which uses `eu-central-1`).
+Region: `eu-south-2` (except Bedrock which uses `eu-central-1` and SES which uses `eu-west-3`).

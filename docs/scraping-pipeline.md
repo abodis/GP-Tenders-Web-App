@@ -27,9 +27,13 @@ A run record is created in the `scrape-runs` DynamoDB table at the start and upd
 
 ## Phase 1: Collection
 
-The `TenderCollector` iterates over all configured searches for a source (e.g. "waste-management", "green-finance", "climate-adaptation"). For each search:
+The `TenderCollector` iterates over all configured searches for a source (e.g. "waste-management", "green-finance", "climate-adaptation").
 
-1. POST to the search API endpoint with the search payload, paginating through results.
+Before iterating, the collector resolves a `postedFrom` date window by looking up the last successful run date from the `scrape-runs` table. If a prior successful run exists, the search payload's `filter.postedFrom` is overridden to that run's date, narrowing results to only recently posted tenders (with one day of overlap to catch late arrivals). On the very first run (no prior history), the YAML-configured `postedFrom` is left untouched so the full initial backfill happens.
+
+For each search:
+
+1. POST to the search API endpoint with the search payload (with the narrowed date window, if applicable), paginating through results.
 2. Parse each page into `TenderSummary` objects via the source parser.
 3. For each tender:
    - **Dedup**: check if the tender already exists in DynamoDB. If yes, count as duplicate and skip.
@@ -100,7 +104,7 @@ The `TenderRetriever` picks up tenders that need detail fetching:
    - Store the raw JSON response in S3 at `{source_id}/{tender_id}/detail.json`.
    - Extract plain text from the HTML description and store as `description.txt`.
    - Download all attached documents and store under `documents/`.
-   - Update DynamoDB status to `completed` with document counts.
+   - Update DynamoDB: set status to `completed`, document counts, and detail-sourced fields (`budget`, `currency`).
 4. On failure, increment `retry_count` and set status to `failed`. After 5 failures, status becomes `permanently_failed`.
 
 ### Why the daily limit matters

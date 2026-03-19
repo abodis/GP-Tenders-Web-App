@@ -22,6 +22,7 @@ keywords: ["config", "aws", "project"]
 - Base URL: configured via env var (see `.env.example`)
 - Auth: API key embedded at build time, sent as `x-api-key` header on every request
 - Pagination: cursor-based with opaque `next_cursor` tokens
+- Backend repo: separate repository — not in this workspace. Do not search for backend Python files here.
 
 ## Build & Deploy
 

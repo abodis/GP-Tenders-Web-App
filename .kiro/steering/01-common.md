@@ -4,6 +4,59 @@ description: "Project conventions and standards"
 keywords: ["conventions", "standards", "common"]
 ---
 
+# System Context
+
+This app (`rfp-web`) is one of three components in the GPTenders platform, a tender discovery and evaluation system built for Green Partners, a Romanian environmental consultancy.
+
+## Platform Components
+
+| Component | Repo | Runtime | Purpose |
+|-----------|------|---------|---------|
+| Scraper | `rfp-scraper` (separate repo) | ECS Fargate Spot, nightly | Discovers tenders from DevelopmentAid, fetches detail pages and documents, stores in DynamoDB + S3 |
+| Analyzer | `rfp-analyzer` (separate repo) | Step Functions + 3 Lambdas, daily | Scores tenders for relevance via LLM (Fireworks Llama 70B / Bedrock Haiku), sends email digest via SES |
+| Web App | `rfp-web` (this repo) | S3 + CloudFront SPA | Browse tenders, review analysis, monitor scraper runs |
+
+All three share a single DynamoDB table (`rfp-tenders`) and S3 bucket (`novare-rfp-scraper-data-dev`). The scraper owns the REST API; the web app and analyzer are read-only API consumers. The analyzer writes analysis fields directly to DynamoDB (never through the API).
+
+## Data Flow
+
+```
+DevelopmentAid ──scraper──→ DynamoDB + S3
+                               │
+                    ┌──────────┼──────────┐
+                    ▼          ▼          ▼
+               Analyzer    Web App    API (read)
+              (LLM score)  (this app)
+                 │
+                 ├──→ DynamoDB (analysis fields)
+                 └──→ SES (email digest)
+```
+
+## Tender Lifecycle
+
+1. Scraper discovers tender → inserts as `pending` (or `skipped` if ineligible)
+2. Scraper fetches detail → `completed` (or `failed` → retry up to 5x → `permanently_failed`)
+3. Analyzer picks up `completed` tenders → applies selection filter (budget/deadline) → LLM analysis → writes `relevance_score` (1–10), `analysis_summary`, `analysis_tags`, `tender_type`, etc.
+4. Tenders filtered out pre-LLM get `relevance_score: 0`, `analysis_model: "selection-filter"`
+5. Email digest includes tenders scoring ≥ 5 (configurable threshold)
+
+## API Shape (consumed by this app)
+
+- Base URL: env var `VITE_API_BASE_URL`, auth via `x-api-key` header
+- All list endpoints return `{ items, count, total_count, next_cursor }` — cursor-based pagination
+- Key endpoints: `GET /tenders` (filterable by status, date range, score, tender_type, analyzed, fully_visible; sortable by relevance_score, budget, deadline), `GET /tenders/{source_id}/{tender_id}` (full detail + description_text), `GET /tenders/.../documents` (presigned S3 URLs, 1h expiry), `GET /sources/`, `GET /sources/{source_id}/runs`
+- Analysis fields on tenders are nullable — unanalyzed tenders have `null` scalars and `[]` for `analysis_tags`
+- `budget: 0` means "not specified", not zero EUR
+- Document URLs expire after 1 hour; re-fetch if stale
+
+## Key Domain Concepts
+
+- `fully_visible`: free tenders (true) vs locked/paid tenders (false) on DevelopmentAid
+- `tender_type`: `request_to_participate` | `expression_of_interest` | `full_proposal` — set by analyzer
+- `relevance_score`: 0 = filtered out pre-LLM, 1–10 = LLM-assigned relevance to Green Partners' profile
+- Analysis detail fields (experts_required, references_required, turnover_required): structured extraction of bid eligibility requirements, each has a `notes` field that should be shown as primary content
+- Scraper runs have two phases: collection (discover new tenders) and retrieval (fetch details), tracked via `collector_result` and `retriever_result`
+
 # Project Conventions
 
 ## Tech Stack

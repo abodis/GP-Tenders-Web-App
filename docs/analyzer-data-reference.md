@@ -17,7 +17,7 @@ Primary key: `pk` = `{source_id}#{tender_id}` (same as scraper)
 | `relevance_score` | int | on analysis | Analyzer Lambda / Selection filter | 1-10 from LLM; `0` for selection-filtered tenders |
 | `analysis_tags` | list[string] | on analysis | Analyzer Lambda | Sector, geography, type, effort tags |
 | `analyzed_at` | string | on analysis | AnalysisWriter | ISO datetime, auto-set on write |
-| `analysis_model` | string | on analysis | AnalysisWriter | Model identifier, e.g. `"accounts/fireworks/models/llama-v3p1-70b-instruct"` or `"selection-filter"` |
+| `analysis_model` | string | on analysis | AnalysisWriter | Model identifier, e.g. `"accounts/fireworks/models/llama-v3p3-70b-instruct"` or `"selection-filter"` |
 | `tender_type` | string | on analysis | Analyzer Lambda | `request_to_participate` \| `expression_of_interest` \| `full_proposal` |
 | `experts_required` | map \| null | on analysis | Analyzer Lambda | `{international, local, key_experts, total, notes}` |
 | `references_required` | map \| null | on analysis | Analyzer Lambda | `{count, type, value_eur, timeline_years, notes}` |
