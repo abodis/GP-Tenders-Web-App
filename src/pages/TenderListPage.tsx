@@ -12,6 +12,7 @@ import { ScoreBadge } from '@/components/ScoreBadge'
 import { Pagination } from '@/components/Pagination'
 import { VisibilityBadge } from '@/components/VisibilityBadge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CalendarDays, SlidersHorizontal, X } from 'lucide-react'
 import devaidLogo from '@/assets/developmentaid-org-logo.svg'
 import type { TenderListParams } from '@/api/types'
 
@@ -231,6 +232,9 @@ export default function TenderListPage() {
   // --- Analyzed filter display value ---
   const analyzedDisplay = analyzedParam === 'true' ? 'analyzed' : analyzedParam === 'false' ? 'unanalyzed' : 'all'
 
+  // --- Active filters detection ---
+  const hasActiveFilters = status !== '' || sourceId !== '' || discoveredFrom !== '' || discoveredTo !== '' || analyzedParam !== ''
+
   if (isLoading) return <LoadingSpinner />
   if (isError) {
     return (
@@ -252,102 +256,141 @@ export default function TenderListPage() {
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-end gap-3">
-        <Select
-          value={discoveredPreset}
-          onValueChange={handleDatePreset}
-          items={[
-            { value: '__clear__', label: 'All dates' },
-            ...DATE_PRESETS.map((p) => ({ value: p.label, label: p.label })),
-          ]}
-        >
-          <SelectTrigger className="min-w-[140px]">
-            <SelectValue placeholder="All dates" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__clear__">All dates</SelectItem>
-            {DATE_PRESETS.map((p) => (
-              <SelectItem key={p.label} value={p.label}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Date group */}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <CalendarDays className="size-3" />
+              Period
+            </span>
+            <Select
+              value={discoveredPreset}
+              onValueChange={handleDatePreset}
+              items={[
+                { value: '__clear__', label: 'All dates' },
+                ...DATE_PRESETS.map((p) => ({ value: p.label, label: p.label })),
+              ]}
+            >
+              <SelectTrigger className="min-w-[140px]">
+                <SelectValue placeholder="All dates" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__clear__">All dates</SelectItem>
+                {DATE_PRESETS.map((p) => (
+                  <SelectItem key={p.label} value={p.label}>{p.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground">From</span>
-          <input
-            type="date"
-            value={discoveredFrom}
-            onChange={(e) => updateFilters({ discovered_from: e.target.value })}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          />
-        </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-muted-foreground">From</span>
+            <input
+              type="date"
+              value={discoveredFrom}
+              onChange={(e) => updateFilters({ discovered_from: e.target.value })}
+              className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-muted-foreground">To</span>
-          <input
-            type="date"
-            value={discoveredTo}
-            onChange={(e) => updateFilters({ discovered_to: e.target.value })}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          />
-        </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-muted-foreground">To</span>
+            <input
+              type="date"
+              value={discoveredTo}
+              onChange={(e) => updateFilters({ discovered_to: e.target.value })}
+              className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+          </label>
+        </div>
 
-        <Select
-          value={status || '__all__'}
-          onValueChange={(v) => updateFilters({ status: v === '__all__' ? '' : v ?? '' })}
-          items={STATUS_OPTIONS.map((opt) => ({
-            value: opt.value || '__all__',
-            label: opt.label,
-          }))}
-        >
-          <SelectTrigger className="min-w-[150px]">
-            <SelectValue placeholder="All statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value || '__all__'} value={opt.value || '__all__'}>{opt.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Vertical divider */}
+        <div className="hidden sm:block self-stretch my-1 w-px bg-border" />
 
-        <Select
-          value={sourceId || '__all__'}
-          onValueChange={(v) => updateFilters({ source_id: v === '__all__' ? '' : v ?? '' })}
-          items={[
-            { value: '__all__', label: 'All sources' },
-            ...(sources?.map((s) => ({ value: s.source_id, label: s.source_id })) ?? []),
-          ]}
-        >
-          <SelectTrigger className="min-w-[140px]">
-            <SelectValue placeholder="All sources" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All sources</SelectItem>
-            {sources?.map((s) => (
-              <SelectItem key={s.source_id} value={s.source_id}>{s.source_id}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Filter group */}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <SlidersHorizontal className="size-3" />
+              Status
+            </span>
+            <Select
+              value={status || '__all__'}
+              onValueChange={(v) => updateFilters({ status: v === '__all__' ? '' : v ?? '' })}
+              items={STATUS_OPTIONS.map((opt) => ({
+                value: opt.value || '__all__',
+                label: opt.label,
+              }))}
+            >
+              <SelectTrigger className="min-w-[150px]">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value || '__all__'} value={opt.value || '__all__'}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Select
-          value={analyzedDisplay}
-          onValueChange={(v) => {
-            updateFilters({ analyzed: v === 'analyzed' ? 'true' : v === 'unanalyzed' ? 'false' : '' })
-          }}
-          items={[
-            { value: 'all', label: 'All tenders' },
-            { value: 'analyzed', label: 'Analyzed only' },
-            { value: 'unanalyzed', label: 'Unanalyzed only' },
-          ]}
-        >
-          <SelectTrigger className="min-w-[140px]">
-            <SelectValue placeholder="All tenders" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All tenders</SelectItem>
-            <SelectItem value="analyzed">Analyzed only</SelectItem>
-            <SelectItem value="unanalyzed">Unanalyzed only</SelectItem>
-          </SelectContent>
-        </Select>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-muted-foreground">Source</span>
+            <Select
+              value={sourceId || '__all__'}
+              onValueChange={(v) => updateFilters({ source_id: v === '__all__' ? '' : v ?? '' })}
+              items={[
+                { value: '__all__', label: 'All sources' },
+                ...(sources?.map((s) => ({ value: s.source_id, label: s.source_id })) ?? []),
+              ]}
+            >
+              <SelectTrigger className="min-w-[140px]">
+                <SelectValue placeholder="All sources" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All sources</SelectItem>
+                {sources?.map((s) => (
+                  <SelectItem key={s.source_id} value={s.source_id}>{s.source_id}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-muted-foreground">Analysis</span>
+            <Select
+              value={analyzedDisplay}
+              onValueChange={(v) => {
+                updateFilters({ analyzed: v === 'analyzed' ? 'true' : v === 'unanalyzed' ? 'false' : '' })
+              }}
+              items={[
+                { value: 'all', label: 'All tenders' },
+                { value: 'analyzed', label: 'Analyzed only' },
+                { value: 'unanalyzed', label: 'Unanalyzed only' },
+              ]}
+            >
+              <SelectTrigger className="min-w-[140px]">
+                <SelectValue placeholder="All tenders" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All tenders</SelectItem>
+                <SelectItem value="analyzed">Analyzed only</SelectItem>
+                <SelectItem value="unanalyzed">Unanalyzed only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Clear filters */}
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={() => navigate('/tenders')}
+            className="mb-0.5 flex items-center gap-1 self-end rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-3" />
+            Clear filters
+          </button>
+        )}
       </div>
 
       {/* Table */}
