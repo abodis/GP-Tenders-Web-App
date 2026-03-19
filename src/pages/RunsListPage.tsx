@@ -70,7 +70,7 @@ export default function RunsListPage() {
                 <tr
                   key={run.pk}
                   onClick={() => navigate(`/runs/${run.source_id}/${run.run_date}`)}
-                  className="cursor-pointer border-b transition-colors hover:bg-muted/50"
+                  className="cursor-pointer border-b transition-colors even:bg-muted/30 hover:bg-muted/50"
                 >
                   <td className="px-4 py-3 whitespace-nowrap">{run.run_date}</td>
                   <td className="px-4 py-3 whitespace-nowrap">{run.source_id}</td>

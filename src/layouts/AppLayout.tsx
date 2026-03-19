@@ -6,7 +6,10 @@ export default function AppLayout() {
     <div className="min-h-screen bg-background text-foreground">
       <nav className="border-b bg-background">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4">
-          <span className="text-lg font-semibold">RFP Web</span>
+          <span className="flex items-center gap-2 text-lg font-semibold">
+            <img src="/logo.svg" alt="" className="h-6 w-6" aria-hidden="true" />
+            GP Tenders
+          </span>
           <NavLink
             to="/tenders"
             className={({ isActive }) =>

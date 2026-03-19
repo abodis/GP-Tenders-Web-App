@@ -65,3 +65,15 @@ export function useTenderDetail(sourceId: string, tenderId: string) {
 - Tailwind utility classes — no custom CSS files
 - Use `cn()` from `src/lib/utils.ts` for conditional class merging
 - shadcn/ui components for all standard UI elements (buttons, tables, badges, etc.)
+
+## shadcn/ui Components
+
+- Installed primitives live in `src/components/ui/` — prefer these over native HTML elements for selects, buttons, etc.
+- Install new components via `npx shadcn@latest add <component> --yes`
+- Select component (base-nova / base-ui):
+  - Always controlled: `<Select value={} onValueChange={}>`
+  - **Critical**: Pass `items` prop to `<Select>` root with `{ value, label }[]` — without this, `<SelectValue>` renders the raw value string instead of the human-readable label
+  - Use sentinel values like `'__all__'` for "no filter" since base-ui doesn't support empty string values
+  - Set `min-w-[Npx]` on `<SelectTrigger>` to prevent narrow collapsed triggers
+  - `<SelectContent>` popup uses `min-w-(--anchor-width)` so it can grow wider than the trigger
+  - Example: `<Select value={v} onValueChange={fn} items={[{ value: '__all__', label: 'All' }, ...]}>`

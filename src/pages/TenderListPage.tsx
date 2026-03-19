@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/StatusBadge'
 import { ScoreBadge } from '@/components/ScoreBadge'
 import { Pagination } from '@/components/Pagination'
 import { VisibilityBadge } from '@/components/VisibilityBadge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import devaidLogo from '@/assets/developmentaid-org-logo.svg'
 import type { TenderListParams } from '@/api/types'
 
@@ -169,8 +170,8 @@ export default function TenderListPage() {
 
   // --- Date preset handler ---
   function handleDatePreset(presetLabel: string) {
-    if (!presetLabel) {
-      // "Custom" / clear — keep existing dates
+    if (presetLabel === '__clear__') {
+      updateFilters({ discovered_from: '', discovered_to: '' })
       return
     }
     const preset = DATE_PRESETS.find((p) => p.label === presetLabel)
@@ -181,6 +182,16 @@ export default function TenderListPage() {
       discovered_to: range.to,
     })
   }
+
+  // Derive which preset matches the current date range (if any)
+  const discoveredPreset = useMemo(() => {
+    if (!discoveredFrom && !discoveredTo) return '__clear__'
+    const match = DATE_PRESETS.find((p) => {
+      const range = p.getRange()
+      return range.from === discoveredFrom && range.to === discoveredTo
+    })
+    return match?.label ?? '__clear__'
+  }, [discoveredFrom, discoveredTo])
 
   // --- Page change handler ---
   function handlePageChange(page: number) {
@@ -236,37 +247,24 @@ export default function TenderListPage() {
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-end gap-3">
-        <select
-          value={status}
-          onChange={(e) => updateFilters({ status: e.target.value })}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+        <Select
+          value={discoveredPreset}
+          onValueChange={handleDatePreset}
+          items={[
+            { value: '__clear__', label: 'All dates' },
+            ...DATE_PRESETS.map((p) => ({ value: p.label, label: p.label })),
+          ]}
         >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-
-        <select
-          value={sourceId}
-          onChange={(e) => updateFilters({ source_id: e.target.value })}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All sources</option>
-          {sources?.map((s) => (
-            <option key={s.source_id} value={s.source_id}>{s.source_id}</option>
-          ))}
-        </select>
-
-        <select
-          onChange={(e) => handleDatePreset(e.target.value)}
-          defaultValue=""
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">Date preset…</option>
-          {DATE_PRESETS.map((p) => (
-            <option key={p.label} value={p.label}>{p.label}</option>
-          ))}
-        </select>
+          <SelectTrigger className="min-w-[140px]">
+            <SelectValue placeholder="All dates" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__clear__">All dates</SelectItem>
+            {DATE_PRESETS.map((p) => (
+              <SelectItem key={p.label} value={p.label}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground">From</span>
@@ -274,7 +272,7 @@ export default function TenderListPage() {
             type="date"
             value={discoveredFrom}
             onChange={(e) => updateFilters({ discovered_from: e.target.value })}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
           />
         </label>
 
@@ -284,22 +282,67 @@ export default function TenderListPage() {
             type="date"
             value={discoveredTo}
             onChange={(e) => updateFilters({ discovered_to: e.target.value })}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm"
           />
         </label>
 
-        <select
+        <Select
+          value={status || '__all__'}
+          onValueChange={(v) => updateFilters({ status: v === '__all__' ? '' : v })}
+          items={STATUS_OPTIONS.map((opt) => ({
+            value: opt.value || '__all__',
+            label: opt.label,
+          }))}
+        >
+          <SelectTrigger className="min-w-[150px]">
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value || '__all__'} value={opt.value || '__all__'}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sourceId || '__all__'}
+          onValueChange={(v) => updateFilters({ source_id: v === '__all__' ? '' : v })}
+          items={[
+            { value: '__all__', label: 'All sources' },
+            ...(sources?.map((s) => ({ value: s.source_id, label: s.source_id })) ?? []),
+          ]}
+        >
+          <SelectTrigger className="min-w-[140px]">
+            <SelectValue placeholder="All sources" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All sources</SelectItem>
+            {sources?.map((s) => (
+              <SelectItem key={s.source_id} value={s.source_id}>{s.source_id}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
           value={analyzedDisplay}
-          onChange={(e) => {
-            const v = e.target.value
+          onValueChange={(v) => {
             updateFilters({ analyzed: v === 'analyzed' ? 'true' : v === 'unanalyzed' ? 'false' : '' })
           }}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+          items={[
+            { value: 'all', label: 'All tenders' },
+            { value: 'analyzed', label: 'Analyzed only' },
+            { value: 'unanalyzed', label: 'Unanalyzed only' },
+          ]}
         >
-          <option value="all">All tenders</option>
-          <option value="analyzed">Analyzed only</option>
-          <option value="unanalyzed">Unanalyzed only</option>
-        </select>
+          <SelectTrigger className="min-w-[140px]">
+            <SelectValue placeholder="All tenders" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All tenders</SelectItem>
+            <SelectItem value="analyzed">Analyzed only</SelectItem>
+            <SelectItem value="unanalyzed">Unanalyzed only</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
@@ -347,7 +390,7 @@ export default function TenderListPage() {
               <tr
                 key={`${t.source_id}-${t.tender_id}`}
                 onClick={() => navigate(`/tenders/${t.source_id}/${t.tender_id}`)}
-                className="cursor-pointer border-b transition-colors hover:bg-muted/50"
+                className="cursor-pointer border-b transition-colors even:bg-muted/30 hover:bg-muted/50"
               >
                 <td className="px-4 py-3">
                   <span className="flex items-center gap-1.5 min-w-0">

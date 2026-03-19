@@ -9,8 +9,9 @@ import { ErrorAlert } from '@/components/ErrorAlert'
 import { RelevanceScoreVisual } from '@/components/RelevanceScoreVisual'
 import { StatusBadge } from '@/components/StatusBadge'
 import { VisibilityBadge } from '@/components/VisibilityBadge'
-import { formatBudget, formatEur } from '@/utils/formatting'
+import { formatBudget, formatEur, formatModelName, formatDateTime } from '@/utils/formatting'
 import { InfoTooltip } from '@/components/InfoTooltip'
+import { Tooltip } from '@base-ui/react/tooltip'
 import { runIdToUrl } from '@/utils/links'
 import { cn } from '@/lib/utils'
 
@@ -144,6 +145,66 @@ export default function TenderDetailPage() {
         </div>
       </section>
 
+      {/* AI Assessment */}
+      {(tender.analysis_context || tender.analysis_summary) && (
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {tender.analysis_summary && (
+            <div>
+              <div className="mb-1 flex items-center gap-2">
+                <h3 className="text-sm font-medium text-muted-foreground">Summary</h3>
+                {(tender.analysis_model || tender.analyzed_at) && (
+                  <Tooltip.Provider>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold leading-none text-muted-foreground hover:text-foreground">
+                        AI
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Positioner sideOffset={4}>
+                          <Tooltip.Popup className="z-50 max-w-xs rounded-md border bg-popover px-3 py-2 text-sm text-popover-foreground shadow-md">
+                            <div className="space-y-1">
+                              {tender.analysis_model && <p>Model: {formatModelName(tender.analysis_model)}</p>}
+                              {tender.analyzed_at && <p>Analyzed: {formatDateTime(tender.analyzed_at)}</p>}
+                            </div>
+                          </Tooltip.Popup>
+                        </Tooltip.Positioner>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  </Tooltip.Provider>
+                )}
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{tender.analysis_summary}</p>
+            </div>
+          )}
+          {tender.analysis_context && (
+            <div>
+              <div className="mb-1 flex items-center gap-2">
+                <h3 className="text-sm font-medium text-muted-foreground">Fit Analysis</h3>
+                {(tender.analysis_model || tender.analyzed_at) && (
+                  <Tooltip.Provider>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold leading-none text-muted-foreground hover:text-foreground">
+                        AI
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Positioner sideOffset={4}>
+                          <Tooltip.Popup className="z-50 max-w-xs rounded-md border bg-popover px-3 py-2 text-sm text-popover-foreground shadow-md">
+                            <div className="space-y-1">
+                              {tender.analysis_model && <p>Model: {formatModelName(tender.analysis_model)}</p>}
+                              {tender.analyzed_at && <p>Analyzed: {formatDateTime(tender.analyzed_at)}</p>}
+                            </div>
+                          </Tooltip.Popup>
+                        </Tooltip.Positioner>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  </Tooltip.Provider>
+                )}
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{tender.analysis_context}</p>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Key Facts Grid */}
       <section>
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -167,32 +228,6 @@ export default function TenderDetailPage() {
           </Field>
         </dl>
       </section>
-
-      {/* AI Assessment */}
-      {(tender.analysis_context || tender.analysis_summary) && (
-        <section>
-          <div className="flex items-baseline gap-3">
-            <h2 className="text-lg font-semibold">AI Assessment</h2>
-            {(tender.analysis_model || tender.analyzed_at) && (
-              <span className="text-xs text-muted-foreground">
-                {[tender.analysis_model, tender.analyzed_at].filter(Boolean).join(' · ')}
-              </span>
-            )}
-          </div>
-          {tender.analysis_context && (
-            <div className="mt-3">
-              <h3 className="mb-1 text-sm font-medium text-muted-foreground">Fit Analysis</h3>
-              <p className="text-sm whitespace-pre-wrap">{tender.analysis_context}</p>
-            </div>
-          )}
-          {tender.analysis_summary && (
-            <div className="mt-3">
-              <h3 className="mb-1 text-sm font-medium text-muted-foreground">Summary</h3>
-              <p className="text-sm whitespace-pre-wrap">{tender.analysis_summary}</p>
-            </div>
-          )}
-        </section>
-      )}
 
       {/* Eligibility */}
       {(tender.experts_required || tender.references_required || tender.turnover_required) && (
