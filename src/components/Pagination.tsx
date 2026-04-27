@@ -13,8 +13,6 @@ interface PaginationProps {
   to: number
   /** Total number of items across all pages */
   total: number | null
-  /** Set of page numbers the user can navigate to (has cursors for) */
-  visitedPages?: Set<number>
 }
 
 /**
@@ -60,15 +58,8 @@ export function Pagination({
   from,
   to,
   total,
-  visitedPages,
 }: PaginationProps) {
   const pages = getPageRange(currentPage, totalPages)
-
-  function isPageNavigable(page: number): boolean {
-    if (page === currentPage) return false
-    if (visitedPages && !visitedPages.has(page)) return false
-    return true
-  }
 
   return (
     <nav aria-label="Pagination" className="flex flex-col items-center gap-3 py-4">
@@ -104,7 +95,7 @@ export function Pagination({
               variant={page === currentPage ? 'default' : 'outline'}
               size="icon-sm"
               onClick={() => onPageChange(page)}
-              disabled={!isPageNavigable(page)}
+              disabled={page === currentPage}
               aria-current={page === currentPage ? 'page' : undefined}
               aria-label={`Page ${page}`}
             >

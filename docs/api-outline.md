@@ -64,7 +64,9 @@ interface PaginatedResponse<T> {
   items: T[];
   count: number;               // items in this page
   total_count: number | null;  // total items matching filters (before pagination); null when unavailable
-  next_cursor: string | null;  // pass as ?cursor= for next page
+  page: number;                // current page number (1-based)
+  total_pages: number | null;  // total number of pages; null when unavailable
+  next_cursor: string | null;  // backward-compatible cursor; non-null when more pages exist
 }
 ```
 
@@ -79,12 +81,12 @@ interface ErrorResponse {
 
 ## Pagination
 
-Cursor-based. Pass `next_cursor` from the previous response as `?cursor=` to get the next page. When `next_cursor` is `null`, there are no more pages.
+Offset-based. Use `page` (1-based) and `page_size` to navigate results.
 
 - `page_size` — 1 to 100, default 20
-- Cursors are opaque base64 strings; don't parse them
-
-When querying all sources (no `source_id`), the cursor format is different internally. Don't mix cursors between single-source and cross-source queries.
+- `page` — 1-based page number, default 1
+- Response includes `total_count` and `total_pages` for building pagination UI
+- `next_cursor` is included for backward compatibility but pagination is driven by `page`
 
 ## Endpoints
 
@@ -113,7 +115,7 @@ Query params:
 | `sort_by` | string | — | `relevance_score`, `budget`, or `deadline`; omit for default `discovered_at` desc. Returns 400 for invalid values |
 | `sort_direction` | string | `desc` | `asc` or `desc`. Applies to `sort_by` field; nulls always sort last regardless of direction |
 | `page_size` | int | 20 | 1–100 |
-| `cursor` | string | — | Pagination token |
+| `page` | int | 1 | Page number (1-based) |
 
 Response item shape:
 
@@ -173,7 +175,7 @@ interface TenderDetailResponse extends TenderListItem {
   discovered_run_id: string | null;
   processed_run_id: string | null;
   detail: object | null;               // raw source API response from S3
-  description_text: string | null;     // plain text description
+  description_text: string | null;     // plain text description from S3 (loaded for all completed tenders)
   warnings: string[];                  // non-fatal issues (e.g. missing S3 objects)
   // Detail-only analysis fields
   analysis_context: string | null;
@@ -209,7 +211,7 @@ Single document presigned URL: `{"filename": "...", "url": "..."}`.
 
 ### GET /settings
 
-List all settings. Returns only items that exist in DynamoDB (missing items are omitted, not returned as null).
+List all settings. Returns only items that exist in the database (missing items are omitted, not returned as null).
 
 Response:
 
@@ -311,7 +313,7 @@ Full source config (sanitized). Includes `api_endpoints`, `auth` (no secrets), `
 
 ### GET /sources/{source_id}/runs
 
-Paginated run list, newest first. Params: `page_size`, `cursor`.
+Paginated run list, newest first. Params: `page_size`, `page`.
 
 Both the list and detail endpoints return the same shape:
 
@@ -352,13 +354,13 @@ Single run. Returns the same `RunItem` shape as the list endpoint above.
 
 ### GET /sources/{source_id}/runs/{run_date}/tenders
 
-Tenders linked to a run. Param: `phase=discovered|processed` (default: `discovered`), plus `page_size`, `cursor`.
+Tenders linked to a run. Param: `phase=discovered|processed` (default: `discovered`), plus `page_size`, `page`.
 
 ## Error Handling
 
 | Status | Meaning |
 |--------|---------|
-| 400 | Invalid query params (bad `sort_by`, empty `source_id`, malformed cursor) |
+| 400 | Invalid query params (bad `sort_by`, empty `source_id`) |
 | 404 | Tender, run, source, or document not found |
 | 403 | Invalid or missing `x-api-key` |
 | 500 | Internal server error |
@@ -367,7 +369,7 @@ All errors return `{"detail": "...", "status_code": N}`.
 
 ## Sorting Behavior
 
-- Default: `discovered_at` descending (newest first) — `sort_direction` does not apply to the default sort
+- Default: `discovered_at` descending (newest first) — `sort_direction` applies to all sort fields including the default
 - `sort_by=relevance_score`: score order, nulls sort last. Default direction: `desc`
 - `sort_by=budget`: numeric order, `0` (not specified) treated as null and sorts last. Default direction: `desc`
 - `sort_by=deadline`: ISO date string order, nulls sort last. Default direction: `desc`

@@ -108,20 +108,19 @@ describe('Pagination', () => {
     expect(screen.queryByRole('button', { name: 'Page 10' })).not.toBeInTheDocument()
   })
 
-  it('disables unvisited page buttons when visitedPages is provided', () => {
-    const visited = new Set([1, 2, 3])
+  it('enables all non-current page buttons', () => {
     render(
       <Pagination
         {...defaultProps}
         currentPage={2}
         totalPages={5}
         hasPreviousPage={true}
-        visitedPages={visited}
       />,
     )
-    // Page 3 is visited and not current — should be enabled
+    // Non-current pages should be enabled
     expect(screen.getByRole('button', { name: 'Page 3' })).toBeEnabled()
-    // Page 4 is not visited — should be disabled
-    expect(screen.getByRole('button', { name: 'Page 4' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Page 4' })).toBeEnabled()
+    // Current page should be disabled
+    expect(screen.getByRole('button', { name: 'Page 2' })).toBeDisabled()
   })
 })

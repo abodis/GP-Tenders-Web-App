@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "kiro-skill": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "8122115eafa1da05d65e0c977b45d8ff407df59c065006f893de861d8ad43ebf"
+    }
+  }
+}

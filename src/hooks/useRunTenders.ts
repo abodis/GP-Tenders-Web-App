@@ -10,9 +10,12 @@ export function useRunTenders(
     queryKey: ['runTenders', sourceId, runDate, phase],
     queryFn: ({ pageParam }) =>
       getRunTenders(sourceId, runDate, phase, {
-        cursor: pageParam,
+        page: String(pageParam),
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.total_pages !== null && lastPage.page < lastPage.total_pages
+        ? lastPage.page + 1
+        : undefined,
   })
 }

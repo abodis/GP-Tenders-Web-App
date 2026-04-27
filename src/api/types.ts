@@ -4,6 +4,8 @@ export interface PaginatedResponse<T> {
   items: T[]
   count: number
   total_count: number | null
+  page: number
+  total_pages: number | null
   next_cursor: string | null
 }
 
@@ -143,12 +145,12 @@ export interface TenderListParams {
   sort_by?: string
   sort_direction?: string
   page_size?: string
-  cursor?: string
+  page?: string
 }
 
 export interface PaginationParams {
   page_size?: string
-  cursor?: string
+  page?: string
 }
 
 // === Settings ===

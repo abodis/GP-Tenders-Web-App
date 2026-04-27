@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTenders } from '@/hooks/useTenders'
 import { useSources } from '@/hooks/useSources'
@@ -60,21 +60,12 @@ export default function TenderListPage() {
   const analyzedParam = searchParams.get('analyzed') ?? ''
   const sortByParam = searchParams.get('sort_by')
   const sortDirectionParam = searchParams.get('sort_direction')
-  const cursorParam = searchParams.get('cursor') ?? ''
   const pageParam = searchParams.get('page') ?? ''
 
   // Derive typed values from URL params
   const sortBy: SortField = isValidSortField(sortByParam) ? sortByParam : 'discovered_at'
   const sortDirection: SortDirection = isValidSortDirection(sortDirectionParam) ? sortDirectionParam : 'desc'
   const currentPage = Math.max(1, parseInt(pageParam, 10) || 1)
-  const cursor = cursorParam || undefined
-
-  // --- Cursor stack ---
-  // cursors[0] = undefined (page 1 needs no cursor)
-  // cursors[N] = cursor for page N+1
-  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined])
-  // Track the latest next_cursor from the API response via ref (no re-render needed)
-  const latestNextCursor = useRef<string | undefined>(undefined)
 
   const { data: sources } = useSources()
 
@@ -90,16 +81,11 @@ export default function TenderListPage() {
     // discovered_at is the default sort — don't send sort_by for it
     if (sortBy !== 'discovered_at') params.sort_by = sortBy
     if (sortBy !== 'discovered_at') params.sort_direction = sortDirection
-    if (cursor) params.cursor = cursor
+    if (currentPage > 1) params.page = String(currentPage)
     return params
-  }, [status, sourceId, discoveredFrom, discoveredTo, analyzedParam, sortBy, sortDirection, cursor])
+  }, [status, sourceId, discoveredFrom, discoveredTo, analyzedParam, sortBy, sortDirection, currentPage])
 
   const { data, isLoading, isError, error, refetch } = useTenders(queryParams)
-
-  // Sync the latest next_cursor into the ref via effect (safe: no state update)
-  useEffect(() => {
-    latestNextCursor.current = data?.next_cursor ?? undefined
-  }, [data?.next_cursor])
 
   // --- Helper: update URL params ---
   const updateFilters = useCallback(
@@ -115,29 +101,21 @@ export default function TenderListPage() {
           }
         }
         // Reset pagination when filters/sort change
-        next.delete('cursor')
         next.delete('page')
         return next
       })
-      // Clear cursor stack when filters change
-      setCursors([undefined])
     },
     [setSearchParams],
   )
 
   const updatePagination = useCallback(
-    (page: number, pageCursor: string | undefined) => {
+    (page: number) => {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev)
         if (page > 1) {
           next.set('page', String(page))
         } else {
           next.delete('page')
-        }
-        if (pageCursor) {
-          next.set('cursor', pageCursor)
-        } else {
-          next.delete('cursor')
         }
         return next
       })
@@ -196,38 +174,17 @@ export default function TenderListPage() {
 
   // --- Page change handler ---
   function handlePageChange(page: number) {
-    // When navigating forward, store the current next_cursor for the next page
-    if (page === currentPage + 1 && latestNextCursor.current) {
-      setCursors((prev) => {
-        if (prev[currentPage] === latestNextCursor.current) return prev
-        const next = [...prev]
-        next[currentPage] = latestNextCursor.current
-        return next
-      })
-    }
-    const pageCursor = page === currentPage + 1
-      ? latestNextCursor.current
-      : cursors[page - 1]
-    updatePagination(page, pageCursor)
+    updatePagination(page)
   }
 
   // --- Computed pagination values ---
   const tenders = data?.items ?? []
   const totalCount = data?.total_count ?? null
-  const totalPages = totalCount !== null ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1
-  const hasNextPage = data?.next_cursor !== null && data?.next_cursor !== undefined
+  const totalPages = data?.total_pages ?? 1
+  const hasNextPage = totalPages !== null && currentPage < totalPages
   const hasPreviousPage = currentPage > 1
   const from = totalCount === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
   const to = totalCount === 0 ? 0 : Math.min(currentPage * PAGE_SIZE, totalCount ?? currentPage * PAGE_SIZE)
-
-  // Build visited pages set for the Pagination component
-  const visitedPages = useMemo(() => {
-    const visited = new Set<number>()
-    for (let i = 0; i < cursors.length; i++) {
-      visited.add(i + 1)
-    }
-    return visited
-  }, [cursors])
 
   // --- Analyzed filter display value ---
   const analyzedDisplay = analyzedParam === 'true' ? 'analyzed' : analyzedParam === 'false' ? 'unanalyzed' : 'all'
@@ -482,7 +439,6 @@ export default function TenderListPage() {
         from={from}
         to={to}
         total={totalCount}
-        visitedPages={visitedPages}
       />
     </div>
   )
