@@ -11,9 +11,9 @@ Phase 1: Collection          Phase 2: Retrieval
 ┌─────────────────────┐      ┌──────────────────────────┐
 │ Search API (paged)  │      │ Authenticate             │
 │        ↓            │      │        ↓                 │
-│ Parse summaries     │      │ Query DynamoDB (pending)  │
+│ Parse summaries     │      │ Query PostgreSQL (pending)  │
 │        ↓            │      │        ↓                 │
-│ Dedup (DynamoDB)    │      │ Fetch detail API          │
+│ Dedup (PostgreSQL)    │      │ Fetch detail API          │
 │        ↓            │      │        ↓                 │
 │ Eligibility check   │      │ Download documents        │
 │        ↓            │      │        ↓                 │
@@ -23,22 +23,22 @@ Phase 1: Collection          Phase 2: Retrieval
                              └──────────────────────────┘
 ```
 
-A run record is created in the `scrape-runs` DynamoDB table at the start and updated with aggregate stats on completion.
+A run record is created in the `scrape_runs` PostgreSQL table at the start and updated with aggregate stats on completion. If a run for the same source and date already exists (e.g. a second manual run on the same day), the existing row is overwritten — reset to `running` with results cleared.
 
 ## Phase 1: Collection
 
-The `TenderCollector` iterates over all configured searches for a source (e.g. "waste-management", "green-finance", "climate-adaptation").
+The `TenderCollector` iterates over all configured searches for a source (e.g. "consolidated" for DevelopmentAid).
 
-Before iterating, the collector resolves a `postedFrom` date window by looking up the last successful run date from the `scrape-runs` table. If a prior successful run exists, the search payload's `filter.postedFrom` is overridden to that run's date, narrowing results to only recently posted tenders (with one day of overlap to catch late arrivals). On the very first run (no prior history), the YAML-configured `postedFrom` is left untouched so the full initial backfill happens.
+Before iterating, the collector resolves a `postedFrom` date window by looking up the last successful run date from the `scrape_runs` table. If a prior successful run exists, the search payload's `filter.postedFrom` is overridden to that run's date, narrowing results to only recently posted tenders (with one day of overlap to catch late arrivals). On the very first run (no prior history), the YAML-configured `postedFrom` is left untouched so the full initial backfill happens.
 
 For each search:
 
 1. POST to the search API endpoint with the search payload (with the narrowed date window, if applicable), paginating through results.
 2. Parse each page into `TenderSummary` objects via the source parser.
 3. For each tender:
-   - **Dedup**: check if the tender already exists in DynamoDB. If yes, count as duplicate and skip.
+   - **Dedup**: check if the tender already exists in PostgreSQL. If yes, count as duplicate and skip.
    - **Eligibility**: evaluate whether the tender should be retrieved (see below).
-   - **Insert**: write the tender to DynamoDB with status `pending` or `skipped`.
+   - **Insert**: write the tender to PostgreSQL with status `pending` or `skipped`.
 
 ### The `fully_visible` flag
 
@@ -98,14 +98,20 @@ This means: only retrieve locked tenders that are open, located in Europe (or gl
 The `TenderRetriever` picks up tenders that need detail fetching:
 
 1. **Authenticate** with the source using credentials from AWS Secrets Manager.
-2. **Query DynamoDB** for tenders with status `pending` or `failed` (with retry_count < 5), up to the `daily_detail_limit` (currently 100).
+2. **Query PostgreSQL** for tenders with status `pending`, `failed` (with retry_count < 5), or `blocked`, up to the `daily_detail_limit` (currently 100).
 3. For each tender:
    - Fetch the detail API endpoint.
    - Store the raw JSON response in S3 at `{source_id}/{tender_id}/detail.json`.
    - Extract plain text from the HTML description and store as `description.txt`.
    - Download all attached documents and store under `documents/`.
-   - Update DynamoDB: set status to `completed`, document counts, and detail-sourced fields (`budget`, `currency`).
+   - Update PostgreSQL: set status to `completed`, document counts, and detail-sourced fields (`budget`, `currency`).
 4. On failure, increment `retry_count` and set status to `failed`. After 5 failures, status becomes `permanently_failed`.
+
+### Credit exhaustion
+
+If the detail API returns HTTP 429 with `code: 40` in the response body, the `RetryHandler` raises `CreditExhaustedError` immediately (no retries). The retriever catches this, marks the current tender as `blocked` (without incrementing `retry_count`), and breaks the processing loop — remaining pending tenders are left for the next run. The run status is set to `credit_exhausted`.
+
+Blocked tenders are re-queued automatically: `get_pending_tenders()` includes `blocked` alongside `pending` and `failed`, so they'll be picked up on the next run when credits have refreshed.
 
 ### Why the daily limit matters
 
@@ -128,15 +134,16 @@ The detail API requires authentication and each request consumes quota against t
               │
      ┌────────▼───────┐
      │  Phase 2 fetch  │
-     └───┬─────────┬──┘
-         │         │
-┌────────▼──┐  ┌───▼──────────┐
-│ completed  │  │   failed     │──── retry (up to 5x)
-└───────────┘  └───┬──────────┘
-                   │ after 5 failures
-          ┌────────▼──────────────┐
-          │ permanently_failed     │
-          └───────────────────────┘
+     └───┬────┬────┬──┘
+         │    │    │
+┌────────▼┐ ┌─▼────────┐ ┌──▼───────────┐
+│completed│ │  failed   │ │   blocked    │
+└─────────┘ └──┬───────┘ │(credit limit)│
+               │          └──────────────┘
+               │ after 5 failures
+      ┌────────▼──────────────┐
+      │ permanently_failed     │
+      └───────────────────────┘
 ```
 
 ## Storage Layout (S3)

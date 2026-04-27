@@ -10,10 +10,10 @@ The pipeline runs daily via an EventBridge rule that triggers a Step Functions s
 Phase 1: Trigger              Phase 2: Analysis (parallel)     Phase 3: Email
 ┌───────────────────────┐     ┌──────────────────────────┐     ┌─────────────────────┐
 │ Fetch completed       │     │ Fetch tender detail      │     │ Scan unemailed      │
-│ tenders (scraper API) │     │ from scraper API         │     │ tenders (DynamoDB)   │
+│ tenders (scraper API) │     │ from scraper API         │     │ tenders (PostgreSQL) │
 │         ↓             │     │         ↓                │     │         ↓            │
 │ Filter already-       │     │ Normalize metadata       │     │ Filter by score      │
-│ analyzed (DynamoDB)   │     │         ↓                │     │ threshold            │
+│ analyzed (API)        │     │         ↓                │     │ threshold            │
 │         ↓             │     │ Build LLM prompt         │     │         ↓            │
 │ Apply selection       │     │ (company profile +       │     │ Build digest         │
 │ criteria              │     │  tender description)     │     │ (top-ranked +        │
@@ -23,7 +23,7 @@ Phase 1: Trigger              Phase 2: Analysis (parallel)     Phase 3: Email
 └───────────────────────┘     │ Parse JSON response      │     │         ↓            │
                               │         ↓                │     │ Send via SES         │
                               │ Write analysis to        │     │         ↓            │
-                              │ DynamoDB                 │     │ Update emailed_at    │
+                              │ PostgreSQL               │     │ Update emailed_at    │
                               └──────────────────────────┘     └─────────────────────┘
 ```
 
@@ -37,7 +37,7 @@ EventBridge (rate: 1 day)
 │ TriggerLambda │
 │ (60s timeout) │
 └───────┬───────┘
-        │ {tenders: [{source_id, tender_id}, ...]}
+        │ {tenders: [...]}
         ▼
 ┌───────────────────────┐
 │ Map: AnalyzeEachTender│
@@ -61,19 +61,19 @@ EventBridge (rate: 1 day)
     └──────────────┘
 ```
 
-Individual tender analysis failures are caught by the ItemCatcher and don't abort the batch. The Map state discards its output (`result_path: DISCARD`), so the Email Lambda receives the original Trigger output (the tender list), not the individual analyzer results. The Email Lambda always runs, even if some analyses failed.
+Individual tender analysis failures are caught by the ItemCatcher and don't abort the batch. The Map state discards its output (`result_path: DISCARD`), so the Email Lambda receives the original Trigger output (tender list), not the individual analyzer results. The Email Lambda always runs, even if some analyses failed.
 
 ## Phase 1: Trigger
 
 The Trigger Lambda (`src/handlers/trigger.py`) identifies which tenders need analysis.
 
-1. Load settings from `config/settings.yaml`.
+1. Load infrastructure settings from `config/settings.yaml`.
 2. Retrieve the scraper API key from SSM Parameter Store (`/rfp-scraper/api-key`).
-3. Call `GET /tenders?status=completed&page_size=100` with automatic pagination to fetch all completed tenders.
-4. Batch-check DynamoDB (`BatchGetItem`, 100 keys per call) to filter out tenders that already have `analyzed_at` set.
-5. Apply `SelectionCriteria` to each remaining tender (see below).
-6. Write filtered-out tenders to DynamoDB with `relevance_score=0` and `analysis_model="selection-filter"` so they aren't re-processed.
-7. Return slim tender references (only `source_id` and `tender_id`) for passing tenders, capped at `max_tenders_per_run` (default: 1000). Full tender data is not passed through Step Functions — the Analyzer Lambda fetches detail independently from the scraper API. This keeps the payload well within the Step Functions 256KB limit.
+3. Fetch analysis settings from the scraper API (`GET /settings/analysis`) to get `max_tenders_per_run`.
+4. Fetch completed, unanalyzed tenders from the scraper API (the API handles the `analyzed_at IS NULL` filter server-side).
+5. Apply `SelectionCriteria` to each tender (see below).
+6. Write filtered-out tenders to PostgreSQL with `relevance_score=0` and `analysis_model="selection-filter"` so they aren't re-processed.
+7. Return slim tender references (only `source_id` and `tender_id`) for passing tenders, capped at `max_tenders_per_run` (from API settings, default: 1000). Full tender data is not passed through Step Functions — the Analyzer Lambda fetches detail independently from the scraper API. This keeps the payload well within the Step Functions 256KB limit.
 
 ### Selection Criteria
 
@@ -81,13 +81,13 @@ Hard filters applied before sending tenders to the LLM. These prevent wasting LL
 
 | Filter | Field | Logic |
 |--------|-------|-------|
-| Budget minimum | `budget` | Must be >= €20,000 (budget of 0/unspecified passes) |
-| Budget maximum | `budget` | Must be <= €2,000,000 |
+| Budget minimum | `budget`, `currency` | Must be >= €20,000 (budget of 0/unspecified passes). Currency read from tender's `currency` field, defaults to EUR if absent. Only EUR and USD budgets are checked. |
+| Budget maximum | `budget`, `currency` | Must be <= €2,000,000 (same currency logic as minimum) |
 | Deadline proximity | `deadline` - `posted_date` | Must be >= 5 days between publish and deadline |
 
-All filters are optional — if a field is missing or unparseable, that check is skipped. A tender passes only if all applicable checks pass.
+All filters are optional — if a field is missing or unparseable, that check is skipped. A tender passes only if all applicable checks pass. Budget checks only apply to EUR and USD currencies — tenders with other currencies skip the budget filter entirely.
 
-Tenders that fail selection are written to DynamoDB immediately:
+Tenders that fail selection are written to PostgreSQL immediately:
 - `relevance_score: 0`
 - `analysis_summary: "Filtered: {reason}"`
 - `analysis_model: "selection-filter"`
@@ -95,21 +95,23 @@ Tenders that fail selection are written to DynamoDB immediately:
 
 ## Phase 2: Analysis
 
-The Analyzer Lambda (`src/handlers/analyzer.py`) processes a single tender, invoked in parallel by the Map state (concurrency 5).
+The Analyzer Lambda (`src/handlers/analyzer.py`) processes a single tender, invoked in parallel by the Map state (concurrency 2).
 
-1. Load settings and company profile from config.
-2. Fetch full tender detail from `GET /tenders/{source_id}/{tender_id}` — this includes `description_text` (plain text extracted from HTML by the scraper).
-3. Normalize metadata: map scraper field names to canonical names (`budget` → `budget_amount`/`budget_currency`, `location_names` → `country`, etc.).
-4. Build the LLM prompt combining:
-   - Company profile (name, description, focus areas, preferred regions, budget range)
+1. Load infrastructure settings from `config/settings.yaml` (LLM config, PostgreSQL, scraper API connection).
+2. Fetch analysis settings from the scraper API (`GET /settings/analysis`) to get `scoring_criteria`.
+3. Fetch company profile from the scraper API (`GET /settings/company-profile`), stripping `setting_type` and `updated_at` metadata fields.
+4. Fetch full tender detail from `GET /tenders/{source_id}/{tender_id}` — this includes `description_text` (plain text extracted from HTML by the scraper).
+5. Normalize metadata: map scraper field names to canonical names (`budget` → `budget_amount`/`budget_currency`, `location_names` → `country`, etc.).
+6. Build the LLM prompt combining:
+   - Company profile (from API: name, description, focus areas, preferred regions, budget range)
    - Tender metadata (title, organization, budget, deadline, country, sectors)
    - Full tender description text
-   - Scoring criteria (8 dimensions: sector fit, geographic fit, budget fit, tender type, team feasibility, reference feasibility, deadline feasibility, competition level)
+   - Scoring criteria (from API, e.g. sector fit, geographic fit, budget fit, tender type, expertise match, IFI/donor alignment, deadline feasibility, competition level)
    - Required JSON output schema
-5. Call the LLM provider (Fireworks or Bedrock, configured in `settings.yaml`).
-6. Parse the JSON response into an `AnalysisResult` (handles markdown code block wrapping).
-7. Write analysis fields to DynamoDB via `AnalysisWriter`.
-8. Return the result dict for the Map state output.
+7. Call the LLM provider (Fireworks or Bedrock, configured in `settings.yaml`).
+8. Parse the JSON response into an `AnalysisResult` (handles markdown code block wrapping).
+9. Write analysis fields to PostgreSQL via `AnalysisWriter` (`src/storage/postgres.py`).
+10. Return the result dict for the Map state output.
 
 ### LLM Providers
 
@@ -137,8 +139,9 @@ On exhaustion, the last error propagates and the Map state's ItemCatcher records
 
 The parser (`src/analysis/parser.py`):
 1. Strips optional markdown code block wrapping (` ```json ... ``` `).
-2. Parses JSON.
-3. Validates against the `AnalysisResult` Pydantic model (enforces `relevance_score` 1-10, valid `tender_type` enum, etc.).
+2. Applies light repairs for common LLM JSON mistakes (e.g. trailing commas, unquoted keys).
+3. Parses JSON.
+4. Validates against the `AnalysisResult` Pydantic model (enforces `relevance_score` 1-10, valid `tender_type` enum, etc.).
 
 Raises `LLMParsingError` on invalid JSON or schema mismatch.
 
@@ -146,18 +149,22 @@ Raises `LLMParsingError` on invalid JSON or schema mismatch.
 
 The Email Lambda (`src/handlers/email_handler.py`) assembles and sends the daily digest.
 
-1. Load settings and recipients from config.
-2. Scan DynamoDB for tenders where `analyzed_at` is set and `emailed_at` is null.
-3. Filter by `score_threshold_for_email` (default: 5) — tenders below this score are excluded.
-4. Build the digest:
+1. Load infrastructure settings from `config/settings.yaml` (PostgreSQL, SES connection).
+2. Retrieve the scraper API key from SSM Parameter Store (`/rfp-scraper/api-key`).
+3. Fetch analysis settings from the scraper API (`GET /settings/analysis`) to get `score_threshold_for_email`.
+4. Fetch recipients from the scraper API (`GET /settings/recipients`) to get the email recipient list.
+5. Fetch today's scraper run from the API (`GET /sources/{source_id}/runs/{today}`) for the run summary.
+6. Query PostgreSQL for tenders where `analyzed_at` is set and `emailed_at` is null.
+7. Filter by `score_threshold_for_email` (from API settings, default: 5) — tenders below this score are excluded.
+8. Build the digest:
    - Separate top-ranked tenders (score >= 7), sorted by score descending.
    - Group remaining tenders by `tender_type` in canonical order: `full_proposal`, `expression_of_interest`, `request_to_participate`.
    - Compute stats: total count, average score, new-since-last count.
-5. Render the HTML email template (`templates/digest.html.j2`) with Jinja2.
-6. Send via SES to all configured recipients.
-7. Update `emailed_at` for every tender included in the digest.
+9. Render the HTML email template (`templates/digest.html.j2`) with Jinja2, passing the latest scraper run data alongside the digest data.
+10. Send via SES to all configured recipients (from API settings). An email is always sent — either a full digest or a summary-only email with run stats.
+11. Update `emailed_at` for every tender included in the digest.
 
-If no tenders pass the score threshold, the Lambda returns early without sending an email.
+The Lambda always sends an email — either a full digest when tenders qualify, or a run-summary-only email when none do. The latest scraper run stats are fetched directly from the scraper API, so recipients can see what happened during the most recent scraper run even when no tenders qualify for the digest.
 
 ## Tender Analysis Lifecycle
 
@@ -203,20 +210,29 @@ If no tenders pass the score threshold, the Lambda returns early without sending
 | Analyzer | `rfp-analyzer-analyzer-dev` | `src.handlers.analyzer.handler` | 120s | 256 MB |
 | Email | `rfp-analyzer-email-dev` | `src.handlers.email_handler.handler` | 60s | 256 MB |
 
-All Lambdas run Python 3.12 on ARM64. Code is bundled via Docker with `requirements-lambda.txt` (runtime deps only: pydantic, pyyaml, httpx, boto3, jinja2) plus `src/`, `config/`, and `templates/` directories.
+All Lambdas run Python 3.12 on ARM64. Code is bundled via Docker with `requirements-lambda.txt` (runtime deps only: pydantic, pyyaml, httpx, boto3, jinja2, psycopg2-binary) plus `src/`, `config/`, and `templates/` directories.
+
+### VPC Networking
+
+All Lambdas run in a CDK-managed private subnet (`172.31.48.0/24`, eu-south-2b) within the default VPC. A NAT gateway in the public subnet (`subnet-096ecb716ae2ff567`) provides outbound internet access for SSM, Secrets Manager, the scraper API, and the Fireworks API. RDS is reachable via the shared Lambda security group (`sg-0b56749e6d0eafd0e`).
+
+DB credentials (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`) are injected as Lambda environment variables from the RDS secret via CloudFormation dynamic references at deploy time.
 
 ### IAM Permissions
 
 | Lambda | Permission | Resource |
 |--------|-----------|----------|
 | Trigger | `ssm:GetParameter` | `/rfp-scraper/api-key` |
-| Trigger | `dynamodb:BatchGetItem`, `dynamodb:UpdateItem` | `rfp-tenders` table |
+| Trigger | RDS (PostgreSQL) | `tenders` table (via VPC + security group) |
 | Analyzer | `ssm:GetParameter` | `/rfp-scraper/api-key` |
-| Analyzer | `dynamodb:UpdateItem` | `rfp-tenders` table |
+| Analyzer | RDS (PostgreSQL) | `tenders` table (via VPC + security group) |
 | Analyzer | `secretsmanager:GetSecretValue` | `rfp-analyzer/fireworks-api-key` |
 | Analyzer | `bedrock:InvokeModel` | `arn:aws:bedrock:eu-central-1:*` |
-| Email | `dynamodb:Query`, `dynamodb:Scan`, `dynamodb:UpdateItem` | `rfp-tenders` table |
+| Email | `ssm:GetParameter` | `/rfp-scraper/api-key` |
+| Email | RDS (PostgreSQL) | `tenders` table (via VPC + security group) |
 | Email | `ses:SendEmail` | `*` |
+| Email | `secretsmanager:GetSecretValue` | `rfp-analyzer/fireworks-api-key` |
+| Email | `secretsmanager:GetSecretValue` | `rfp-analyzer/scraper-api-key` |
 
 ### Alerting
 
@@ -233,7 +249,9 @@ An SNS topic (`rfp-analyzer-alerts-dev`) delivers alarm notifications via email.
 | Resource | Type | Notes |
 |----------|------|-------|
 | `rfp-analyzer-pipeline-dev` | Step Functions (Standard) | Orchestrates the three Lambdas |
-| `rfp-analyzer-schedule-dev` | EventBridge Rule | `rate(1 day)` → triggers the state machine |
+| `rfp-analyzer-schedule-dev` | EventBridge Rule | `cron(0 5 * * ? *)` (daily at 05:00 UTC) → triggers the state machine |
+| `rfp-analyzer-nat-dev` | NAT Gateway | eu-south-2b, uses EIP `eipalloc-021c85231980ac9ae` |
+| Private subnet `172.31.48.0/24` | VPC Subnet | CDK-managed, eu-south-2b, routes 0.0.0.0/0 → NAT |
 | `rfp-analyzer-alerts-dev` | SNS Topic | Email subscription for alarm notifications |
 | CloudWatch Log Groups | 30-day retention | One per Lambda |
 | `rfp-analyzer/fireworks-api-key` | Secrets Manager | Fireworks LLM API key |

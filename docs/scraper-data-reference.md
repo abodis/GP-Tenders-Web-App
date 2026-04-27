@@ -2,55 +2,61 @@
 
 Reference for downstream consumers (analyzer, web app) describing what data the scraper produces, where it lives, and what the API returns.
 
-## DynamoDB: `rfp-tenders` Table
+## PostgreSQL: `tenders` Table
 
-Primary key: `pk` = `{source_id}#{tender_id}`
+RDS PostgreSQL 16 instance (`db.t4g.small`), database `rfpdb`. Connection via `ThreadedConnectionPool`. Credentials resolved in order: (1) direct env vars (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`) — used by Lambda in VPC where Secrets Manager is unreachable; (2) Secrets Manager via `DB_SECRET_ARN` — used by ECS task which has internet access.
 
-GSIs:
-- `source-discovered-index` — partition: `source_id`, sort: `discovered_at`
-- `source-status-index` — partition: `source_id`, sort: `status`
+Primary key: `pk` = `{source_id}#{tender_id}` (TEXT)
 
-### Fields
+Indexes:
+- `idx_tenders_source_discovered` — `(source_id, discovered_at DESC)`
+- `idx_tenders_source_status` — `(source_id, status)`
+- `idx_tenders_relevance_score` — `(relevance_score DESC NULLS LAST)`
+- `idx_tenders_deadline` — `(deadline NULLS LAST)`
+- `idx_tenders_budget` — `(budget)`
+- `idx_tenders_analyzed_at` — `(analyzed_at)`
 
-| Field | Type | Required | Set by | Notes |
-|-------|------|----------|--------|-------|
-| `pk` | string | always | insert | `{source_id}#{tender_id}` |
-| `source_id` | string | always | insert | e.g. `"developmentaid-org"` |
-| `tender_id` | string | always | insert | Source-specific ID (numeric string) |
-| `title` | string | always | insert | Tender name |
-| `posted_date` | string | always | insert | ISO date, e.g. `"2026-03-15"` |
-| `deadline` | string | optional | insert | ISO date or null if open-ended |
-| `discovered_at` | string | always | insert | ISO datetime, auto-generated |
-| `status` | string | always | insert/update | `pending` → `completed` / `failed` → `permanently_failed` / `skipped` |
-| `retry_count` | int | always | insert (0) | Incremented on each failure |
-| `fully_visible` | bool | optional | insert | `true` = free tender, `false` = locked (costs a credit) |
-| `budget` | int | optional | insert/update | EUR amount; `0` = not specified. Set at insert from search metadata, updated on detail retrieval |
-| `currency` | string | optional | update | Original currency code from detail API (e.g. `"EUR"`, `"USD"`); `null` if not specified |
-| `organization` | string | optional | insert | Abbreviated donor name |
-| `location_names` | string | optional | insert | Comma-separated, e.g. `"Romania, Moldova"` |
-| `status_name` | string | optional | insert | Source status label, e.g. `"open"`, `"closed"` |
-| `sectors` | string | optional | insert | e.g. `"Statistics and data analysis"` |
-| `types` | string | optional | insert | e.g. `"Consulting services"` |
-| `documents_total` | int | optional | insert | Number of attached documents (from search metadata) |
-| `skip_reason` | string | optional | insert | Why the tender was skipped (eligibility filter) |
-| `discovered_run_id` | string | optional | insert | `{source_id}#{run_date}` linking to the discovery run |
-| `last_attempt` | string | optional | update | ISO datetime of last retrieval attempt |
-| `last_error` | string | optional | update | Error message from last failed attempt |
-| `s3_prefix` | string | optional | update | Set on completion: `{source_id}/{tender_id}` |
-| `documents_downloaded` | int | optional | update | Count of successfully downloaded docs |
-| `documents_failed` | int | optional | update | Count of failed doc downloads |
-| `processed_run_id` | string | optional | update | `{source_id}#{run_date}` linking to the retrieval run |
-| `relevance_score` | int | optional | analyzer | 0–10 relevance score |
-| `analysis_summary` | string | optional | analyzer | AI-generated summary |
-| `analysis_tags` | list | optional | analyzer | Classification tags |
-| `tender_type` | string | optional | analyzer | e.g. `"request_to_participate"`, `"expression_of_interest"`, `"full_proposal"` |
-| `analyzed_at` | string | optional | analyzer | ISO datetime when analysis completed |
-| `analysis_context` | string | optional | analyzer | Context used for analysis |
-| `analysis_model` | string | optional | analyzer | LLM model identifier |
-| `emailed_at` | string | optional | analyzer | ISO datetime when email digest sent |
-| `experts_required` | map | optional | analyzer | Structured extraction of expert requirements |
-| `references_required` | map | optional | analyzer | Structured extraction of reference requirements |
-| `turnover_required` | map | optional | analyzer | Structured extraction of turnover requirements |
+### Columns
+
+| Column | Type | Required | Set by | Notes |
+|--------|------|----------|--------|-------|
+| `pk` | TEXT | always | insert | `{source_id}#{tender_id}` |
+| `source_id` | TEXT | always | insert | e.g. `"developmentaid-org"` |
+| `tender_id` | TEXT | always | insert | Source-specific ID (numeric string) |
+| `title` | TEXT | always | insert | Tender name |
+| `posted_date` | TEXT | always | insert | ISO date, e.g. `"2026-03-15"` |
+| `deadline` | TEXT | optional | insert | ISO date or null if open-ended |
+| `discovered_at` | TIMESTAMPTZ | always | insert | Auto-generated |
+| `status` | TEXT | always | insert/update | `pending` → `completed` / `failed` → `permanently_failed` / `blocked` / `skipped` |
+| `retry_count` | INTEGER | always | insert (0) | Incremented on each failure |
+| `fully_visible` | BOOLEAN | always | insert | `true` = free tender, `false` = locked (costs a credit) |
+| `budget` | INTEGER | always | insert/update | EUR amount; `0` = not specified. Set at insert from search metadata, updated on detail retrieval |
+| `currency` | TEXT | optional | update | Original currency code from detail API (e.g. `"EUR"`, `"USD"`); `null` if not specified |
+| `organization` | TEXT | optional | insert | Abbreviated donor name |
+| `location_names` | TEXT | optional | insert | Comma-separated, e.g. `"Romania, Moldova"` |
+| `status_name` | TEXT | optional | insert | Source status label, e.g. `"open"`, `"closed"` |
+| `sectors` | TEXT | optional | insert | e.g. `"Statistics and data analysis"` |
+| `types` | TEXT | optional | insert | e.g. `"Consulting services"` |
+| `documents_total` | INTEGER | always | insert | Number of attached documents (from search metadata) |
+| `skip_reason` | TEXT | optional | insert | Why the tender was skipped (eligibility filter) |
+| `discovered_run_id` | TEXT | optional | insert | `{source_id}#{run_date}` linking to the discovery run |
+| `last_attempt` | TIMESTAMPTZ | optional | update | Timestamp of last retrieval attempt |
+| `last_error` | TEXT | optional | update | Error message from last failed attempt |
+| `s3_prefix` | TEXT | optional | update | Set on completion: `{source_id}/{tender_id}` |
+| `documents_downloaded` | INTEGER | always | update | Count of successfully downloaded docs (default 0) |
+| `documents_failed` | INTEGER | always | update | Count of failed doc downloads (default 0) |
+| `processed_run_id` | TEXT | optional | update | `{source_id}#{run_date}` linking to the retrieval run |
+| `relevance_score` | INTEGER | optional | analyzer | 0–10 relevance score |
+| `analysis_summary` | TEXT | optional | analyzer | AI-generated summary |
+| `analysis_tags` | TEXT[] | optional | analyzer | Classification tags (Postgres array, default `{}`) |
+| `tender_type` | TEXT | optional | analyzer | e.g. `"request_to_participate"`, `"expression_of_interest"`, `"full_proposal"` |
+| `analyzed_at` | TIMESTAMPTZ | optional | analyzer | When analysis completed |
+| `analysis_context` | TEXT | optional | analyzer | Context used for analysis |
+| `analysis_model` | TEXT | optional | analyzer | LLM model identifier |
+| `emailed_at` | TIMESTAMPTZ | optional | analyzer | When email digest sent |
+| `experts_required` | JSONB | optional | analyzer | `{international, local, key_experts, total, notes}` |
+| `references_required` | JSONB | optional | analyzer | `{count, type, value_eur, timeline_years, notes}` |
+| `turnover_required` | JSONB | optional | analyzer | `{annual_eur, years, notes}` |
 
 ### Status Lifecycle
 
@@ -59,30 +65,45 @@ insert (new tender)
   ├─ fully_visible=true OR passes eligibility → status="pending"
   └─ fails eligibility → status="skipped" (skip_reason set)
 
-retriever picks up "pending" or "failed" tenders:
+retriever picks up "pending", "failed", or "blocked" tenders:
   ├─ success → status="completed" (s3_prefix, documents_downloaded/failed set)
+  ├─ credit exhaustion (429 + code 40) → status="blocked" (retry_count unchanged)
   └─ failure → status="failed" (retry_count++, last_error set)
        └─ retry_count >= 5 → status="permanently_failed"
 ```
 
-## DynamoDB: `scrape-runs` Table
+## PostgreSQL: `scrape_runs` Table
 
-Primary key: `pk` = `{source_id}#{run_date}`
+Primary key: `pk` = `{source_id}#{run_date}` (TEXT)
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| `pk` | string | always | `{source_id}#{run_date}` |
-| `source_id` | string | always | |
-| `run_date` | string | always | ISO date |
-| `started_at` | string | always | ISO datetime |
-| `completed_at` | string | optional | Set when run finishes |
-| `status` | string | always | `running` → `completed` / `failed` |
-| `collector_result` | map | optional | See collector stats below |
-| `retriever_result` | map | optional | See retriever stats below |
+If a run for the same `source_id` + `run_date` already exists, the row is overwritten (reset to `running` status with `completed_at`, `collector_result`, and `retriever_result` cleared). This supports multiple manual runs on the same day.
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| `pk` | TEXT | always | `{source_id}#{run_date}` |
+| `source_id` | TEXT | always | |
+| `run_date` | TEXT | always | ISO date |
+| `started_at` | TIMESTAMPTZ | always | |
+| `completed_at` | TIMESTAMPTZ | optional | Set when run finishes |
+| `status` | TEXT | always | `running` → `completed` / `failed` |
+| `collector_result` | JSONB | optional | See collector stats below |
+| `retriever_result` | JSONB | optional | See retriever stats below |
 
 Collector result map: `{total_found, new_tenders, new_pending, new_skipped, duplicates, errors}`
 
-Retriever result map: `{processed, successful, failed, permanently_failed, documents_downloaded, documents_failed}`
+Retriever result map: `{processed, successful, failed, permanently_failed, documents_downloaded, documents_failed, blocked}`
+
+## PostgreSQL: `settings` Table
+
+Stores application settings (selection-criteria, analysis, company-profile, recipients).
+
+Primary key: `pk` = `SETTINGS#{setting_type}` (TEXT)
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| `pk` | TEXT | always | `SETTINGS#{setting_type}` |
+| `data` | JSONB | always | Full setting payload (default `{}`) |
+| `updated_at` | TIMESTAMPTZ | always | Server-set on each write |
 
 ## S3: `novare-rfp-scraper-data-dev`
 
@@ -94,7 +115,7 @@ For each completed tender, stored under `{source_id}/{tender_id}/`:
 | `description.txt` | Plain-text extraction of `description_html` (HTML tags stripped) | Only if description_html is non-empty |
 | `documents/{filename}` | Binary document files | Only if tender has downloadable documents |
 
-`detail.json` contains the full developmentaid detail response including fields not stored in DynamoDB: `description` (HTML), `contacts`, `organization` (full object with name/country), `documents` (array with id/name/size), and other source-specific metadata.
+`detail.json` contains the full developmentaid detail response including fields not stored in PostgreSQL: `description` (HTML), `contacts`, `organization` (full object with name/country), `documents` (array with id/name/size), and other source-specific metadata.
 
 ## API Endpoints
 
@@ -103,7 +124,7 @@ Auth: `x-api-key` header (value in SSM `/rfp-scraper/api-key`, SecureString, eu-
 
 ### GET /tenders
 
-Paginated tender list. Returns `{"items": [...], "count": N, "next_cursor": "..." | null}`.
+Paginated tender list. Returns `{"items": [...], "count": N, "total_count": N, "page": N, "total_pages": N}`.
 
 Query params:
 - `source_id` (optional) — omit to query all sources
@@ -113,9 +134,10 @@ Query params:
 - `analyzed` (optional) — boolean, filter by analysis status
 - `min_score` (optional) — integer, minimum relevance_score
 - `tender_type` (optional) — string, exact match on tender_type
-- `sort_by` (optional) — string, only `relevance_score` supported; returns 400 for invalid values
+- `sort_by` (optional) — `relevance_score`, `budget`, or `deadline`; returns 400 for invalid values
+- `sort_direction` (optional, default `desc`) — `asc` or `desc`
 - `page_size` (optional, default 20, max 100)
-- `cursor` (optional) — opaque pagination token from previous response
+- `page` (optional, default 1) — 1-based page number
 
 Each item in `items`:
 
@@ -175,9 +197,9 @@ Full tender detail. Returns all fields from the list item plus:
   "analysis_context": "Matched keywords: statistics, data analysis...",
   "analysis_model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
   "emailed_at": "2026-03-16T15:00:00",
-  "experts_required": {"count": 3, "categories": ["senior statistician", "data analyst"]},
-  "references_required": {"count": 2, "min_value_eur": 500000},
-  "turnover_required": {"min_annual_eur": 1000000, "years": 3}
+  "experts_required": {"international": 3, "local": 2, "key_experts": 2, "total": 5, "notes": "Senior governance expert required"},
+  "references_required": {"count": 3, "type": "similar projects", "value_eur": 500000, "timeline_years": 5, "notes": "EU-funded projects preferred"},
+  "turnover_required": {"annual_eur": 1000000, "years": 3, "notes": "Average annual turnover"}
 }
 ```
 
@@ -231,4 +253,4 @@ Tenders linked to a run. Query param `phase=discovered|processed` (default: disc
 
 ### GET /health
 
-DynamoDB connectivity check. No auth required.
+PostgreSQL connectivity check. No auth required.

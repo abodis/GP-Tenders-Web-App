@@ -2,11 +2,11 @@
 
 Reference for downstream consumers describing what data the analyzer produces, where it lives, and how it relates to the scraper's data.
 
-## DynamoDB: `rfp-tenders` Table (Analysis Fields)
+## PostgreSQL: `tenders` Table (Analysis Fields)
 
-The analyzer writes to the same `rfp-tenders` table used by the scraper. It never modifies scraper-owned fields — it only adds analysis columns to existing tender records.
+The analyzer writes to the `tenders` table in PostgreSQL (RDS). It never modifies scraper-owned fields — it only updates analysis columns on existing tender records.
 
-Primary key: `pk` = `{source_id}#{tender_id}` (same as scraper)
+Primary key: `source_id` + `tender_id` (composite)
 
 ### Analysis Fields
 
@@ -26,11 +26,11 @@ Primary key: `pk` = `{source_id}#{tender_id}` (same as scraper)
 
 ### Field Ownership Boundary
 
-The `AnalysisWriter` enforces a strict allowlist (`ANALYSIS_FIELDS`) so that analysis writes can never corrupt scraper-owned fields like `status`, `s3_prefix`, or `retry_count`. The `emailed_at` field is written separately by the `EmailSender`.
+The `AnalysisWriter` (in `src/storage/postgres.py`) enforces a strict allowlist (`ANALYSIS_FIELDS`) so that analysis writes can never corrupt scraper-owned fields like `status`, `s3_prefix`, or `retry_count`. The `emailed_at` field is written separately by the Email Lambda via `AnalysisWriter.update_emailed_at()`.
 
 ### Selection-Filtered Tenders
 
-Tenders that fail the pre-analysis selection criteria are written to DynamoDB with:
+Tenders that fail the pre-analysis selection criteria are written to PostgreSQL with:
 - `relevance_score`: `0`
 - `analysis_summary`: `"Filtered: {reason}"` (e.g. `"Filtered: Budget 5000 EUR below minimum 20000"`)
 - `analysis_model`: `"selection-filter"`
@@ -46,7 +46,7 @@ The analyzer reads from S3 but does not write to it. Tender descriptions are fet
 
 ## Scraper API (Consumed)
 
-The analyzer is a downstream consumer of the scraper API. It uses two endpoints:
+The analyzer is a downstream consumer of the scraper API. It uses tender endpoints for data and settings endpoints for runtime configuration.
 
 ### GET /tenders
 
@@ -54,30 +54,48 @@ Used by the Trigger Lambda to fetch completed tenders for analysis.
 
 Query params used:
 - `status=completed` — only completed tenders have descriptions available
-- `page_size=100` — automatic pagination via `next_cursor`
+- `analyzed=false` — only unanalyzed tenders (server-side `analyzed_at IS NULL` filter)
+- `page_size=100` — automatic pagination via `page`/`total_pages`
 
 ### GET /tenders/{source_id}/{tender_id}
 
 Used by the Analyzer Lambda to fetch full tender detail including `description_text` (plain text extracted from HTML by the scraper).
 
 Key fields consumed from the detail response:
-- `title`, `organization`, `budget`, `deadline`, `location_names`, `sectors` — used as tender metadata for the LLM prompt
+- `title`, `organization`, `budget`, `currency`, `deadline`, `location_names`, `sectors` — used as tender metadata for the LLM prompt
+- `currency` — original currency code (e.g. `"EUR"`, `"USD"`); used for budget display in prompts and email digest. Falls back to `"EUR"` when absent.
 - `description_text` — the main input for LLM analysis
+
+### GET /settings/{setting_type}
+
+Used by all three Lambdas to fetch user-editable settings at invocation time via `ScraperClient.get_settings()`. Replaces YAML-based sources for analysis parameters, company profile, and recipients.
+
+| Setting type | Consumed by | Key fields used |
+|-------------|-------------|-----------------|
+| `analysis` | Trigger, Analyzer, Email | `max_tenders_per_run`, `scoring_criteria`, `score_threshold_for_email` |
+| `company-profile` | Analyzer | `company_name`, `description`, `focus_areas`, `preferred_regions`, `typical_budget_range`, `typical_team_size` |
+| `recipients` | Email | `recipients` (list of email addresses) |
+
+Responses include `setting_type` and `updated_at` metadata fields which handlers strip before use. If any settings fetch fails (404, network error, etc.), the Lambda fails immediately — no fallback to YAML defaults.
+
+### GET /sources/{source_id}/runs/{run_date}
+
+Used by the Email Lambda to fetch today's scraper run for the run summary section of the digest email. Called via `ScraperClient.get_latest_run(source_id)` which requests `GET /sources/{source_id}/runs/{today}` using today's date in ISO format. Returns `None` if no run exists for today (404 or other API error).
 
 ## Secrets & Parameters
 
 | Secret | Store | Path | Used by |
 |--------|-------|------|---------|
-| Scraper API key | SSM Parameter Store | `/rfp-scraper/api-key` (SecureString, eu-south-2) | Trigger Lambda, Analyzer Lambda |
+| Scraper API key | SSM Parameter Store | `/rfp-scraper/api-key` (SecureString, eu-south-2) | Trigger Lambda, Analyzer Lambda, Email Lambda |
 | Fireworks API key | Secrets Manager | `rfp-analyzer/fireworks-api-key` | Analyzer Lambda |
 
 ## Configuration Files
 
-All configuration is loaded from YAML files bundled with the Lambda deployment package.
+Infrastructure settings are loaded from YAML files bundled with the Lambda deployment package. User-editable settings (analysis parameters, company profile, recipients) are fetched from the scraper API at invocation time — see [Scraper API > GET /settings](#get-settingssetting_type) above.
 
 ### `config/settings.yaml`
 
-Top-level application settings validated by `Settings` (Pydantic v2).
+Top-level infrastructure settings validated by `Settings` (Pydantic v2).
 
 | Section | Key fields | Notes |
 |---------|-----------|-------|
@@ -85,14 +103,16 @@ Top-level application settings validated by `Settings` (Pydantic v2).
 | `llm` | `provider` (`fireworks` \| `bedrock`), provider-specific config | LLM provider selection |
 | `llm.fireworks` | `api_key_secret_arn`, `model`, `max_tokens` | Fireworks-specific |
 | `llm.bedrock` | `region`, `model_id`, `max_tokens` | Bedrock-specific |
-| `analysis` | `schedule`, `score_threshold_for_email`, `max_tenders_per_run` | Pipeline behavior |
-| `dynamodb` | `table_name`, `region` | DynamoDB connection |
+| `analysis` | `schedule` | Pipeline schedule (infrastructure only) |
+| `database` | `secret_arn`, `region` | RDS secret ARN for CDK; credentials injected as env vars |
 | `s3` | `bucket`, `region` | S3 connection (for direct reads) |
 | `ses` | `region`, `from_address` | Email sending |
 
-### `config/company_profile.yaml`
+Note: `score_threshold_for_email` and `max_tenders_per_run` were removed from `settings.yaml` — they are now sourced from `GET /settings/analysis`.
 
-Company profile injected into every LLM prompt. Validated by `CompanyProfile`.
+### `config/company_profile.yaml` (legacy)
+
+Company profile previously injected into every LLM prompt. Now sourced from `GET /settings/company-profile`. The YAML file remains in the repo but is no longer read by Lambda handlers.
 
 | Field | Type | Notes |
 |-------|------|-------|
@@ -103,9 +123,9 @@ Company profile injected into every LLM prompt. Validated by `CompanyProfile`.
 | `typical_budget_range` | `{min_eur, max_eur}` | EUR range |
 | `typical_team_size` | string | e.g. `"3-8 experts"` |
 
-### `config/recipients.yaml`
+### `config/recipients.yaml` (legacy)
 
-Email digest recipients. Validated by `RecipientsConfig`.
+Email digest recipients. Now sourced from `GET /settings/recipients`. The YAML file remains in the repo but is no longer read by Lambda handlers.
 
 | Field | Type | Notes |
 |-------|------|-------|
@@ -161,4 +181,14 @@ The `DigestBuilder` assembles a `DigestData` payload from analyzed tenders:
 | `grouped_sections` | dict[str, list[TenderDigestItem]] | Remaining tenders grouped by `tender_type` in order: `full_proposal`, `expression_of_interest`, `request_to_participate` |
 | `date` | string | ISO date of digest generation |
 
-Tenders with `relevance_score` below `score_threshold_for_email` (default: 5) are excluded from the digest entirely.
+Tenders with `relevance_score` below `score_threshold_for_email` (from `GET /settings/analysis`, default: 5) are excluded from the digest entirely.
+
+### Template Context (Additional Variables)
+
+Beyond the `DigestData` fields, the email template receives one extra variable:
+
+| Variable | Type | Source | Notes |
+|----------|------|--------|-------|
+| `run_stats` | dict \| None | Scraper API (`GET /sources/{source_id}/runs`) | Latest scraper run data (e.g. `run_date`, collection stats). `None` if no runs found. Fetched directly by the Email Lambda — not passed through Step Functions. |
+
+This is always passed to the template, enabling run-summary emails even when no tenders qualify for the digest.
