@@ -44,9 +44,10 @@ Implement in dependency order. Each section is one spec-sized unit — reviewabl
 ---
 
 ### Phase 4: References Management (§6)
-**Status: pending**
+**Status: up next**
 **Scope:** New `/references` route. CRUD list + detail, document upload, expert linking (to Team), re-extraction trigger.
 **Why fourth:** Depends on Team existing (experts_involved links to team member UUIDs).
+**Brainstorm:** `.kiro/docs/brainstorms/references-management.md`
 
 ---
 

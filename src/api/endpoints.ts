@@ -17,6 +17,11 @@ import type {
   TeamMemberCreate,
   TeamMemberUpdate,
   TeamMemberCvResponse,
+  ReferenceListParams,
+  ReferenceListItem,
+  ReferenceResponse,
+  ReferenceCreate,
+  ReferenceUpdate,
 } from '@/api/types'
 
 export function getTenders(
@@ -128,4 +133,45 @@ export function uploadTeamMemberCv(
 
 export function getTeamMemberCv(id: string): Promise<TeamMemberCvResponse> {
   return apiFetch<TeamMemberCvResponse>(`/team/${id}/cv`)
+}
+
+// === References ===
+
+export function getReferences(
+  params?: ReferenceListParams,
+): Promise<PaginatedResponse<ReferenceListItem>> {
+  return apiFetch<PaginatedResponse<ReferenceListItem>>(
+    '/references',
+    params ? { ...params } : undefined,
+  )
+}
+
+export function getReference(id: string): Promise<ReferenceResponse> {
+  return apiFetch<ReferenceResponse>(`/references/${id}`)
+}
+
+export function createReference(body: ReferenceCreate): Promise<ReferenceResponse> {
+  return apiPost<ReferenceResponse>('/references', body)
+}
+
+export function updateReference(id: string, body: ReferenceUpdate): Promise<ReferenceResponse> {
+  return apiPut<ReferenceResponse>(`/references/${id}`, body)
+}
+
+export function deleteReference(id: string): Promise<void> {
+  return apiDelete(`/references/${id}`)
+}
+
+export function uploadReferenceDocument(id: string, file: File): Promise<ReferenceResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+  return apiUpload<ReferenceResponse>(`/references/${id}/document`, formData)
+}
+
+export function deleteReferenceDocument(id: string, filename: string): Promise<void> {
+  return apiDelete(`/references/${id}/document/${filename}`)
+}
+
+export function extractReference(id: string): Promise<ReferenceResponse> {
+  return apiPost<ReferenceResponse>(`/references/${id}/extract`, {})
 }

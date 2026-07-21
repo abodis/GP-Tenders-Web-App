@@ -9,6 +9,8 @@ import TenderDetailPage from '@/pages/TenderDetailPage'
 import SettingsPage from '@/pages/SettingsPage'
 import TeamListPage from '@/pages/TeamListPage'
 import TeamDetailPage from '@/pages/TeamDetailPage'
+import ReferenceListPage from '@/pages/ReferenceListPage'
+import ReferenceDetailPage from '@/pages/ReferenceDetailPage'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 const queryClient = new QueryClient()
@@ -27,6 +29,8 @@ export default function App() {
               <Route path="runs/:sourceId/:runDate" element={<RunDetailPage />} />
               <Route path="team" element={<TeamListPage />} />
               <Route path="team/:id" element={<TeamDetailPage />} />
+              <Route path="references" element={<ReferenceListPage />} />
+              <Route path="references/:id" element={<ReferenceDetailPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>

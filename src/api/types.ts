@@ -280,3 +280,84 @@ export interface TeamMemberCvResponse {
   filename: string
   presigned_url: string
 }
+
+// === References ===
+
+export type ReferenceExtractionStatus = 'pending' | 'processing' | 'completed' | 'failed'
+
+export interface EnrichedExpert {
+  id: string
+  name: string
+  roles: string[]
+}
+
+export interface DocumentInfo {
+  filename: string
+  presigned_url: string
+}
+
+export interface ExtractedFields {
+  themes?: string[]
+  donor?: string
+  countries?: string[]
+  type?: string
+  key_deliverables?: string[]
+  budget_range?: string
+}
+
+export interface ReferenceListItem {
+  id: string
+  title: string
+  client: string | null
+  sector: string | null
+  year: number | null
+  budget_eur: number | null
+  extraction_status: ReferenceExtractionStatus | null
+}
+
+export interface ReferenceResponse extends ReferenceListItem {
+  region: string | null
+  description: string | null
+  experts_involved: string[]
+  enriched_experts: EnrichedExpert[]
+  consortium_partners: string[]
+  documents: string[]
+  document_urls: DocumentInfo[]
+  knowledge_s3_key: string | null
+  extracted_fields: ExtractedFields | null
+  slug: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ReferenceCreate {
+  title: string
+  client?: string
+  sector?: string
+  region?: string
+  year?: number
+  budget_eur?: number
+  description?: string
+  experts_involved?: string[]
+  consortium_partners?: string[]
+}
+
+export interface ReferenceUpdate {
+  title?: string
+  client?: string
+  sector?: string
+  region?: string
+  year?: number
+  budget_eur?: number
+  description?: string
+  experts_involved?: string[]
+  consortium_partners?: string[]
+}
+
+export interface ReferenceListParams {
+  page?: string
+  page_size?: string
+  search?: string
+  sector?: string
+  year?: string
+}
