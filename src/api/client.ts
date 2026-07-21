@@ -73,3 +73,78 @@ export async function apiPut<T>(
 
   return res.json() as Promise<T>
 }
+
+export async function apiPost<T>(
+  path: string,
+  body: unknown,
+): Promise<T> {
+  const url = new URL(path, API_BASE)
+
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: {
+      'x-api-key': API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    let detail: string
+    try {
+      const err = await res.json()
+      detail = err.detail ?? res.statusText
+    } catch {
+      detail = res.statusText
+    }
+    throw new ApiError(detail, res.status)
+  }
+
+  return res.json() as Promise<T>
+}
+
+export async function apiDelete(path: string): Promise<void> {
+  const url = new URL(path, API_BASE)
+
+  const res = await fetch(url.toString(), {
+    method: 'DELETE',
+    headers: { 'x-api-key': API_KEY },
+  })
+
+  if (!res.ok) {
+    let detail: string
+    try {
+      const err = await res.json()
+      detail = err.detail ?? res.statusText
+    } catch {
+      detail = res.statusText
+    }
+    throw new ApiError(detail, res.status)
+  }
+}
+
+export async function apiUpload<T>(
+  path: string,
+  body: FormData,
+): Promise<T> {
+  const url = new URL(path, API_BASE)
+
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: { 'x-api-key': API_KEY },
+    body,
+  })
+
+  if (!res.ok) {
+    let detail: string
+    try {
+      const err = await res.json()
+      detail = err.detail ?? res.statusText
+    } catch {
+      detail = res.statusText
+    }
+    throw new ApiError(detail, res.status)
+  }
+
+  return res.json() as Promise<T>
+}

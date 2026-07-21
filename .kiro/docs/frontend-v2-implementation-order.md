@@ -9,6 +9,12 @@ Tracks: `docs/frontend-v2-requirements.md`
 
 Implement in dependency order. Each section is one spec-sized unit — reviewable and testable independently. Complete one before starting the next.
 
+## Testing Principles
+
+- **Unit/property tests**: Limited to pure utility functions and non-trivial logic only. No component render tests or snapshots — product is evolving too fast for those to provide value.
+- **Playwright smoke tests**: Written at the END of each phase as the verification gate. Cover critical user flows against local dev server + local API (`.env.local`).
+- **Build pass** (`npm run build`) is the primary CI gate during implementation.
+
 ---
 
 ## Phases
@@ -22,16 +28,18 @@ Implement in dependency order. Each section is one spec-sized unit — reviewabl
 ---
 
 ### Phase 2: Tender List Enhancements (§1)
-**Status: pending**
+**Status: up next**
 **Scope:** Full-text search bar (`q` param), new score columns (interestingness, unified), `min_interestingness` filter.
 **Why second:** Quick wins, standalone, no new pages needed.
+**Brainstorm:** `.kiro/docs/brainstorms/tender-list-enhancements.md`
 
 ---
 
 ### Phase 3: Team Management (§5)
-**Status: pending**
+**Status: up next**
 **Scope:** New `/team` route. CRUD list + detail pages, CV upload (multipart), extraction status.
 **Why third:** Standalone CRUD, net-new pages. Required before References.
+**Brainstorm:** `.kiro/docs/brainstorms/team-management.md`
 
 ---
 

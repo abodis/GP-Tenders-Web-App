@@ -113,6 +113,7 @@ src/
 - **Removing UI features instead of fixing data flow**: When list data is missing fields, check whether the API already provides them (or can trivially be updated to) before stripping columns from the UI.
 - **Displaying structured data over human-readable notes**: When API fields include both numeric/structured data and a `notes` field, prefer showing notes as the primary visible content. The structured data (counts, amounts, years) should be secondary (tooltip/hover). Notes capture the human-readable requirement; numbers are for verification.
 - **@base-ui/react import casing**: Subpath imports from `@base-ui/react` use lowercase module names (e.g. `@base-ui/react/tooltip`, `@base-ui/react/dialog`), not PascalCase. PascalCase paths will fail at build/test time with "not exported" errors.
+- **Testing against deployed API instead of local**: When verifying backend changes, always use the local API (`http://localhost:8000` from `.env.local`), not the deployed endpoint (from `.env`). The deployed API requires a separate deploy cycle and will lag behind local development.
 
 ## Shell Command Rules
 

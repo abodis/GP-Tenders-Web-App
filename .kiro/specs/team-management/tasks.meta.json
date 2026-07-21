@@ -1,0 +1,374 @@
+{
+  "pbtResults": {
+    "8.4 Write property test: Re-extraction warning visibility predicate": {
+      "status": "passed",
+      "lastRunTimestamp": 1784658688017
+    },
+    "8.3 Write property test: Client-side CV file validation": {
+      "status": "passed",
+      "lastRunTimestamp": 1784658690590
+    },
+    "8.2 Write property test: Pagination termination": {
+      "status": "passed",
+      "lastRunTimestamp": 1784658697557
+    },
+    "8.1 Write property test: API client error handling consistency": {
+      "status": "passed",
+      "lastRunTimestamp": 1784658702334
+    },
+    "8.5 Write property test: Create form validation gate": {
+      "status": "passed",
+      "lastRunTimestamp": 1784658712549
+    }
+  },
+  "executionHistory": {
+    "1.1 Add `apiPost`, `apiDelete`, and `apiUpload` functions to `src/api/client.ts`": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624645
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657638923
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657708830
+      }
+    ],
+    "1.2 Add team member type definitions to `src/api/types.ts`": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624689
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657639873
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657709707
+      }
+    ],
+    "1.3 Add team endpoint functions to `src/api/endpoints.ts`": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624738
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657715679
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657796835
+      }
+    ],
+    "2.1 Create `src/hooks/useTeam.ts` with all six hooks": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624782
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657802423
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657884937
+      }
+    ],
+    "3. Checkpoint - Verify API layer": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624852
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657890569
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657949767
+      }
+    ],
+    "4.1 Create `src/pages/TeamListPage.tsx` with list display, search, and filtering": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624897
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657950720
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658152477
+      }
+    ],
+    "4.2 Add CreateMemberDialog to TeamListPage": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657624945
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658159570
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658373645
+      }
+    ],
+    "5.1 Create `src/pages/TeamDetailPage.tsx` with view/edit form": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625003
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657951497
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658153603
+      }
+    ],
+    "5.2 Add CV upload zone to TeamDetailPage": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625088
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658160416
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658373686
+      }
+    ],
+    "5.3 Add delete confirmation and re-extraction warning to TeamDetailPage": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625132
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658378606
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658546256
+      }
+    ],
+    "6.1 Register `/team` and `/team/:id` routes in `src/App.tsx` and add \"Team\" nav link to `src/layouts/AppLayout.tsx`": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625178
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657952493
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658154724
+      }
+    ],
+    "7. Checkpoint - Verify full UI": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625213
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658551853
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658613050
+      }
+    ],
+    "8.1 Write property test: API client error handling consistency": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625254
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658617682
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658724607
+      }
+    ],
+    "8.2 Write property test: Pagination termination": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625297
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658618455
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658725421
+      }
+    ],
+    "8.3 Write property test: Client-side CV file validation": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625345
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658619164
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658726158
+      }
+    ],
+    "8.4 Write property test: Re-extraction warning visibility predicate": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625387
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658619842
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658726865
+      }
+    ],
+    "8.5 Write property test: Create form validation gate": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625433
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658620740
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658727708
+      }
+    ],
+    "9. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657625486
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658732133
+      },
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658873360
+      }
+    ],
+    "1. API client extensions and team types": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657796879
+      }
+    ],
+    "2. TanStack Query hooks": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784657884987
+      }
+    ],
+    "6. Routing and navigation": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658154773
+      }
+    ],
+    "4. Team List Page": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658373714
+      }
+    ],
+    "5. Team Detail Page": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658546302
+      }
+    ],
+    "8. Property-based tests": [
+      {
+        "executionId": "04ee0bbc-bea7-4417-813a-fb52adb830ba",
+        "chatSessionId": "sess_61e597fe-cdd8-4cbb-8fbc-a8f4b9379f34",
+        "timestamp": 1784658727751
+      }
+    ]
+  }
+}

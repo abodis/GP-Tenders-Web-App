@@ -58,6 +58,8 @@ const tenderListItemArb = fc
       tender_type: null,
       analyzed_at: null,
       organization: null,
+      interestingness_score: null,
+      unified_score: null,
     }),
   )
 

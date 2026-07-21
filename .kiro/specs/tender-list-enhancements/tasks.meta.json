@@ -1,0 +1,186 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Add `interestingness_score` and `unified_score` fields to `TenderListItem`, and `q` and `min_interestingness` fields to `TenderListParams` in `src/api/types.ts`": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648765800
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648781391
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648899698
+      }
+    ],
+    "1.2 Add `getInterestingnessScoreBadgeColor` and `getUnifiedScoreBadgeColor` functions to `src/utils/formatting.ts`": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648765834
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648782333
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648900714
+      }
+    ],
+    "2.1 Create `src/components/SearchInput.tsx` with debounced text input": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648765875
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648906865
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648975070
+      }
+    ],
+    "3.1 Add search bar and min interestingness filter to `src/pages/TenderListPage.tsx`": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648765927
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648990848
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649247325
+      }
+    ],
+    "3.2 Add Interestingness and Unified score columns to the table": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648765975
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648992020
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649248345
+      }
+    ],
+    "3.3 Implement sort-search interaction logic": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648766017
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649254965
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649367241
+      }
+    ],
+    "3.4 Implement search-specific empty state": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648766058
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649255788
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649367912
+      }
+    ],
+    "4. Checkpoint - Build verification": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648766100
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649375984
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649409032
+      }
+    ],
+    "5.1 Write Playwright tests covering the key user flows": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648766141
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649415054
+      },
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649575796
+      }
+    ],
+    "1. Extend types and utility functions": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648900788
+      }
+    ],
+    "2. Create SearchInput component": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784648975120
+      }
+    ],
+    "3. Integrate search, filter, and score columns into TenderListPage": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649367974
+      }
+    ],
+    "5. Playwright e2e tests": [
+      {
+        "executionId": "65269c87-adcc-4e10-a81f-e68835645948",
+        "chatSessionId": "sess_393b9348-352e-4156-8c38-b0f2ab18bf92",
+        "timestamp": 1784649575841
+      }
+    ]
+  }
+}

@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTenders } from '@/hooks/useTenders'
 import { useSources } from '@/hooks/useSources'
-import { formatBudget } from '@/utils/formatting'
+import { formatBudget, getInterestingnessScoreBadgeColor, getUnifiedScoreBadgeColor } from '@/utils/formatting'
 import { getErrorMessage } from '@/utils/errors'
 import { DATE_PRESETS } from '@/utils/date-presets'
+import { SearchInput } from '@/components/SearchInput'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -12,11 +13,12 @@ import { ScoreBadge } from '@/components/ScoreBadge'
 import { Pagination } from '@/components/Pagination'
 import { VisibilityBadge } from '@/components/VisibilityBadge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { CalendarDays, SlidersHorizontal, X } from 'lucide-react'
 import devaidLogo from '@/assets/developmentaid-org-logo.svg'
 import type { TenderListParams } from '@/api/types'
 
-type SortField = 'discovered_at' | 'relevance_score' | 'budget' | 'deadline'
+type SortField = 'discovered_at' | 'relevance_score' | 'interestingness_score' | 'unified_score' | 'budget' | 'deadline'
 type SortDirection = 'asc' | 'desc'
 
 const PAGE_SIZE = 20
@@ -30,7 +32,7 @@ const STATUS_OPTIONS = [
   { value: 'skipped', label: 'Skipped' },
 ]
 
-const SORT_FIELDS: SortField[] = ['discovered_at', 'relevance_score', 'budget', 'deadline']
+const SORT_FIELDS: SortField[] = ['discovered_at', 'relevance_score', 'interestingness_score', 'unified_score', 'budget', 'deadline']
 
 function isValidSortField(value: string | null): value is SortField {
   return value !== null && (SORT_FIELDS as string[]).includes(value)
@@ -61,6 +63,8 @@ export default function TenderListPage() {
   const sortByParam = searchParams.get('sort_by')
   const sortDirectionParam = searchParams.get('sort_direction')
   const pageParam = searchParams.get('page') ?? ''
+  const q = searchParams.get('q') ?? ''
+  const minInterestingness = searchParams.get('min_interestingness') ?? ''
 
   // Derive typed values from URL params
   const sortBy: SortField = isValidSortField(sortByParam) ? sortByParam : 'discovered_at'
@@ -68,6 +72,19 @@ export default function TenderListPage() {
   const currentPage = Math.max(1, parseInt(pageParam, 10) || 1)
 
   const { data: sources } = useSources()
+
+  // Validate min_interestingness on load: remove invalid values from URL
+  useEffect(() => {
+    if (!minInterestingness) return
+    const parsed = parseInt(minInterestingness, 10)
+    if (isNaN(parsed) || parsed < 1 || parsed > 10 || String(parsed) !== minInterestingness) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('min_interestingness')
+        return next
+      })
+    }
+  }, [minInterestingness, setSearchParams])
 
   // --- Build API params from URL ---
   const queryParams = useMemo<TenderListParams>(() => {
@@ -78,12 +95,18 @@ export default function TenderListPage() {
     if (discoveredTo) params.discovered_to = discoveredTo
     if (analyzedParam === 'true') params.analyzed = 'true'
     if (analyzedParam === 'false') params.analyzed = 'false'
+    if (q) params.q = q
+    const parsedMin = parseInt(minInterestingness, 10)
+    if (!isNaN(parsedMin) && parsedMin >= 1 && parsedMin <= 10) {
+      params.min_interestingness = minInterestingness
+    }
     // discovered_at is the default sort — don't send sort_by for it
-    if (sortBy !== 'discovered_at') params.sort_by = sortBy
-    if (sortBy !== 'discovered_at') params.sort_direction = sortDirection
+    // When searching, omit sort params (results ranked by relevance)
+    if (!q && sortBy !== 'discovered_at') params.sort_by = sortBy
+    if (!q && sortBy !== 'discovered_at') params.sort_direction = sortDirection
     if (currentPage > 1) params.page = String(currentPage)
     return params
-  }, [status, sourceId, discoveredFrom, discoveredTo, analyzedParam, sortBy, sortDirection, currentPage])
+  }, [status, sourceId, discoveredFrom, discoveredTo, analyzedParam, q, minInterestingness, sortBy, sortDirection, currentPage])
 
   const { data, isLoading, isError, error, refetch } = useTenders(queryParams)
 
@@ -190,7 +213,7 @@ export default function TenderListPage() {
   const analyzedDisplay = analyzedParam === 'true' ? 'analyzed' : analyzedParam === 'false' ? 'unanalyzed' : 'all'
 
   // --- Active filters detection ---
-  const hasActiveFilters = status !== '' || sourceId !== '' || discoveredFrom !== '' || discoveredTo !== '' || analyzedParam !== ''
+  const hasActiveFilters = status !== '' || sourceId !== '' || discoveredFrom !== '' || discoveredTo !== '' || analyzedParam !== '' || q !== '' || minInterestingness !== ''
 
   if (isLoading) return <LoadingSpinner />
   if (isError) {
@@ -335,6 +358,28 @@ export default function TenderListPage() {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-muted-foreground">Min Interestingness</span>
+            <Select
+              value={minInterestingness || '__all__'}
+              onValueChange={(v) => updateFilters({ min_interestingness: v === '__all__' ? '' : v ?? '' })}
+              items={[
+                { value: '__all__', label: 'All' },
+                ...Array.from({ length: 10 }, (_, i) => ({ value: String(i + 1), label: `${i + 1}+` })),
+              ]}
+            >
+              <SelectTrigger className="min-w-[100px]">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All</SelectItem>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <SelectItem key={i + 1} value={String(i + 1)}>{i + 1}+</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Clear filters */}
@@ -350,40 +395,60 @@ export default function TenderListPage() {
         )}
       </div>
 
+      {/* Search bar */}
+      <SearchInput
+        value={q}
+        onChange={(value) => updateFilters({ q: value })}
+      />
+
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full table-fixed text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="w-[28%] px-4 py-3 text-left font-medium">Title</th>
-              <th className="w-[12%] px-4 py-3 text-left font-medium">Organization</th>
+              <th className="w-[24%] px-4 py-3 text-left font-medium">Title</th>
+              <th className="w-[10%] px-4 py-3 text-left font-medium">Organization</th>
               <th className="w-[7%] px-4 py-3 text-left font-medium">Status</th>
               <th
-                className="w-[5%] px-4 py-3 text-left font-medium cursor-pointer select-none"
-                onClick={() => handleSort('relevance_score')}
+                className={cn("w-[5%] px-4 py-3 text-left font-medium select-none", q ? "opacity-50 cursor-default" : "cursor-pointer")}
+                onClick={q ? undefined : () => handleSort('relevance_score')}
                 aria-sort={getAriaSort('relevance_score', sortBy, sortDirection)}
               >
                 Score{sortIndicator('relevance_score')}
               </th>
               <th
-                className="w-[8%] px-4 py-3 text-right font-medium cursor-pointer select-none"
-                onClick={() => handleSort('budget')}
+                className={cn("w-[5%] px-4 py-3 text-left font-medium select-none", q ? "opacity-50 cursor-default" : "cursor-pointer")}
+                onClick={q ? undefined : () => handleSort('interestingness_score')}
+                aria-sort={getAriaSort('interestingness_score', sortBy, sortDirection)}
+              >
+                Interest.{sortIndicator('interestingness_score')}
+              </th>
+              <th
+                className={cn("w-[5%] px-4 py-3 text-left font-medium select-none", q ? "opacity-50 cursor-default" : "cursor-pointer")}
+                onClick={q ? undefined : () => handleSort('unified_score')}
+                aria-sort={getAriaSort('unified_score', sortBy, sortDirection)}
+              >
+                Unified{sortIndicator('unified_score')}
+              </th>
+              <th
+                className={cn("w-[8%] px-4 py-3 text-right font-medium select-none", q ? "opacity-50 cursor-default" : "cursor-pointer")}
+                onClick={q ? undefined : () => handleSort('budget')}
                 aria-sort={getAriaSort('budget', sortBy, sortDirection)}
               >
                 Budget{sortIndicator('budget')}
               </th>
               <th
-                className="w-[9%] px-4 py-3 text-left font-medium cursor-pointer select-none"
-                onClick={() => handleSort('deadline')}
+                className={cn("w-[8%] px-4 py-3 text-left font-medium select-none", q ? "opacity-50 cursor-default" : "cursor-pointer")}
+                onClick={q ? undefined : () => handleSort('deadline')}
                 aria-sort={getAriaSort('deadline', sortBy, sortDirection)}
               >
                 Deadline{sortIndicator('deadline')}
               </th>
-              <th className="w-[10%] px-4 py-3 text-left font-medium">Location</th>
+              <th className="w-[9%] px-4 py-3 text-left font-medium">Location</th>
               <th className="w-[10%] px-4 py-3 text-left font-medium">Source</th>
               <th
-                className="w-[9%] px-4 py-3 text-left font-medium cursor-pointer select-none"
-                onClick={() => handleSort('discovered_at')}
+                className={cn("w-[9%] px-4 py-3 text-left font-medium select-none", q ? "opacity-50 cursor-default" : "cursor-pointer")}
+                onClick={q ? undefined : () => handleSort('discovered_at')}
                 aria-sort={getAriaSort('discovered_at', sortBy, sortDirection)}
               >
                 Discovered{sortIndicator('discovered_at')}
@@ -406,6 +471,38 @@ export default function TenderListPage() {
                 <td className="px-4 py-3 truncate" title={t.organization ?? ''}>{t.organization ?? '—'}</td>
                 <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
                 <td className="px-4 py-3"><ScoreBadge score={t.relevance_score} /></td>
+                <td className="px-4 py-3">
+                  {(() => {
+                    const { color, label } = getInterestingnessScoreBadgeColor(t.interestingness_score)
+                    const colorClasses: Record<string, string> = {
+                      green: 'bg-green-100 text-green-800',
+                      yellow: 'bg-yellow-100 text-yellow-800',
+                      red: 'bg-red-100 text-red-800',
+                      gray: 'bg-gray-100 text-gray-600',
+                    }
+                    return (
+                      <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', colorClasses[color])}>
+                        {label}
+                      </span>
+                    )
+                  })()}
+                </td>
+                <td className="px-4 py-3">
+                  {(() => {
+                    const { color, label } = getUnifiedScoreBadgeColor(t.unified_score)
+                    const colorClasses: Record<string, string> = {
+                      green: 'bg-green-100 text-green-800',
+                      yellow: 'bg-yellow-100 text-yellow-800',
+                      red: 'bg-red-100 text-red-800',
+                      gray: 'bg-gray-100 text-gray-600',
+                    }
+                    return (
+                      <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', colorClasses[color])}>
+                        {label}
+                      </span>
+                    )
+                  })()}
+                </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">{formatBudget(t.budget)}</td>
                 <td className="px-4 py-3 whitespace-nowrap">{t.deadline ?? '—'}</td>
                 <td className="px-4 py-3 truncate" title={t.location_names ?? ''}>{t.location_names ?? '—'}</td>
@@ -421,8 +518,24 @@ export default function TenderListPage() {
             ))}
             {tenders.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
-                  No tenders found
+                <td colSpan={11} className="px-4 py-8 text-center text-muted-foreground">
+                  {q ? (
+                    <div className="space-y-2">
+                      <p>No tenders match your search</p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateFilters({ q: '' })
+                        }}
+                        className="text-sm font-medium text-primary hover:underline"
+                      >
+                        Clear search
+                      </button>
+                    </div>
+                  ) : (
+                    'No tenders found'
+                  )}
                 </td>
               </tr>
             )}

@@ -33,6 +33,17 @@ export default function AppLayout() {
             Runs
           </NavLink>
           <NavLink
+            to="/team"
+            className={({ isActive }) =>
+              cn(
+                'text-sm font-medium transition-colors hover:text-primary',
+                isActive ? 'text-primary' : 'text-muted-foreground',
+              )
+            }
+          >
+            Team
+          </NavLink>
+          <NavLink
             to="/settings"
             className={({ isActive }) =>
               cn(

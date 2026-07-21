@@ -32,6 +32,64 @@ export function getScoreBadgeColor(score: number | null): ScoreBadgeResult {
   return { color: 'red', label: String(score) }
 }
 
+/**
+ * Returns the color variant and label for an interestingness score badge.
+ *
+ * - green for scores ≥7
+ * - yellow for scores ≥4
+ * - red for scores <4
+ * - gray with "Filtered" label for score 0
+ * - gray with "—" label for null
+ */
+export function getInterestingnessScoreBadgeColor(score: number | null): ScoreBadgeResult {
+  if (score === null) {
+    return { color: 'gray', label: '—' }
+  }
+
+  if (score === 0) {
+    return { color: 'gray', label: 'Filtered' }
+  }
+
+  if (score >= 7) {
+    return { color: 'green', label: String(score) }
+  }
+
+  if (score >= 4) {
+    return { color: 'yellow', label: String(score) }
+  }
+
+  return { color: 'red', label: String(score) }
+}
+
+/**
+ * Returns the color variant and label for a unified score badge.
+ *
+ * - green for scores ≥7.0
+ * - yellow for scores ≥4.0
+ * - red for scores <4.0
+ * - gray with "Filtered" label for score 0
+ * - gray with "—" label for null
+ */
+export function getUnifiedScoreBadgeColor(score: number | null): ScoreBadgeResult {
+  if (score === null) {
+    return { color: 'gray', label: '—' }
+  }
+
+  if (score === 0) {
+    return { color: 'gray', label: 'Filtered' }
+  }
+
+  if (score >= 7.0) {
+    return { color: 'green', label: score.toFixed(1) }
+  }
+
+  if (score >= 4.0) {
+    return { color: 'yellow', label: score.toFixed(1) }
+  }
+
+  return { color: 'red', label: score.toFixed(1) }
+}
+
 const eurFormatter = new Intl.NumberFormat('en-IE', {
   style: 'currency',
   currency: 'EUR',

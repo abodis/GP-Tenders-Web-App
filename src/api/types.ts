@@ -38,6 +38,8 @@ export interface TenderListItem {
   tender_type: string | null
   analyzed_at: string | null
   organization: string | null
+  interestingness_score: number | null
+  unified_score: number | null
 }
 
 export interface TenderDetailResponse extends TenderListItem {
@@ -146,6 +148,8 @@ export interface TenderListParams {
   sort_direction?: string
   page_size?: string
   page?: string
+  q?: string
+  min_interestingness?: string
 }
 
 export interface PaginationParams {
@@ -221,4 +225,58 @@ export type SettingResponse =
 export interface SettingsListResponse {
   items: SettingResponse[]
   count: number
+}
+
+// === Team Members ===
+
+export type TeamMemberType = 'employee' | 'contractor'
+export type ExtractionStatus = 'pending' | 'completed' | 'failed'
+
+export interface TeamMemberListItem {
+  id: string
+  name: string
+  email: string
+  type: TeamMemberType
+  roles: string[]
+  extraction_status: ExtractionStatus | null
+}
+
+export interface TeamMemberResponse extends TeamMemberListItem {
+  phone: string | null
+  specializations: string[]
+  languages: string[]
+  notes: string | null
+  cv_s3_key: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TeamMemberCreate {
+  name: string
+  email: string
+  type: TeamMemberType
+  roles?: string[]
+}
+
+export interface TeamMemberUpdate {
+  name?: string
+  email?: string
+  phone?: string
+  type?: TeamMemberType
+  roles?: string[]
+  specializations?: string[]
+  languages?: string[]
+  notes?: string
+}
+
+export interface TeamListParams {
+  page?: string
+  page_size?: string
+  type?: TeamMemberType
+  q?: string
+}
+
+export interface TeamMemberCvResponse {
+  filename: string
+  presigned_url: string
 }
