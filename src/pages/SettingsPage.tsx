@@ -3,6 +3,7 @@ import { useSettings, useSaveSetting } from '@/hooks/useSettings'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { InfoTooltip } from '@/components/InfoTooltip'
+import { MarkdownPreview } from '@/components/MarkdownPreview'
 import { getErrorMessage } from '@/utils/errors'
 import { formatDateTime } from '@/utils/formatting'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +18,8 @@ import type {
   AnalysisSettings,
   CompanyProfileSettings,
   RecipientsSettings,
+  InterestingnessSettings,
+  DigestSettings,
 } from '@/api/types'
 
 function validateEmail(email: string): string | null {
@@ -277,6 +280,15 @@ function AnalysisSection({ data }: { data: AnalysisSettings }) {
     if (maxTenders <= 0) errs.maxTenders = 'Must be > 0'
     if (maxTenders > 10000) errs.maxTenders = 'Must be ≤ 10,000'
     if (criteria.length === 0) errs.criteria = 'At least one criterion required'
+
+    const FORBIDDEN_CRITERIA = ['sector fit', 'geographic fit', 'expertise match']
+    const forbidden = criteria.filter(c =>
+      FORBIDDEN_CRITERIA.includes(c.trim().toLowerCase())
+    )
+    if (forbidden.length > 0) {
+      errs.criteria = `Forbidden criteria: ${forbidden.join(', ')}. These are handled by the interestingness scorer.`
+    }
+
     setErrors(errs)
     if (Object.keys(errs).length > 0) return
 
@@ -512,6 +524,252 @@ function RecipientsSection({ data }: { data: RecipientsSettings }) {
   )
 }
 
+
+// === Interestingness Section ===
+
+function InterestingnessSection({ data }: { data: InterestingnessSettings }) {
+  const [interestProfile, setInterestProfile] = useState(data.interest_profile)
+  const [topN, setTopN] = useState(data.interestingness_top_n)
+  const [minScore, setMinScore] = useState(data.interestingness_min_score)
+  const [showPreview, setShowPreview] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const mutation = useSaveSetting<InterestingnessSettings>('interestingness')
+
+  useEffect(() => {
+    setInterestProfile(data.interest_profile)
+    setTopN(data.interestingness_top_n)
+    setMinScore(data.interestingness_min_score)
+  }, [data])
+
+  function handleSave() {
+    const errs: Record<string, string> = {}
+    if (!interestProfile.trim()) errs.interestProfile = 'Interest profile is required'
+    if (interestProfile.length > 5000) errs.interestProfile = 'Must be ≤ 5000 characters'
+    if (!Number.isInteger(topN) || topN < 1 || topN > 1000) errs.topN = 'Must be an integer between 1 and 1000'
+    if (!Number.isInteger(minScore) || minScore < 1 || minScore > 10) errs.minScore = 'Must be an integer between 1 and 10'
+    setErrors(errs)
+    if (Object.keys(errs).length > 0) return
+
+    mutation.mutate({
+      interest_profile: interestProfile,
+      scoring_criteria: data.scoring_criteria,
+      interestingness_top_n: topN,
+      interestingness_min_score: minScore,
+    })
+  }
+
+  return (
+    <Section
+      title="Interestingness"
+      description="Defines how the second-pass interestingness scorer evaluates tenders against your specific interests."
+      badge="scoring"
+      updatedAt={data.updated_at}
+      isPending={mutation.isPending}
+      isSuccess={mutation.isSuccess}
+      error={mutation.error}
+      onSave={handleSave}
+    >
+      <Field
+        label="Interest profile"
+        htmlFor="int-profile"
+        hint="Markdown description of what makes a tender interesting to you. Fed directly to the interestingness LLM scorer."
+        error={errors.interestProfile}
+      >
+        <div className="space-y-2">
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setShowPreview(false)}
+              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${!showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${showPreview ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+            >
+              Preview
+            </button>
+          </div>
+          {showPreview ? (
+            <div className="min-h-[120px] rounded-md border p-3">
+              <MarkdownPreview content={interestProfile} />
+            </div>
+          ) : (
+            <Textarea
+              id="int-profile"
+              value={interestProfile}
+              onChange={(e) => setInterestProfile(e.target.value)}
+              maxLength={5000}
+              rows={6}
+              placeholder="Describe what makes tenders interesting to your organization…"
+            />
+          )}
+          <p className={`text-xs ${interestProfile.length >= 5000 ? 'text-destructive' : 'text-muted-foreground'}`}>
+            {interestProfile.length}/5000
+          </p>
+        </div>
+      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Top N tenders"
+          htmlFor="int-topn"
+          hint="Maximum number of top-scoring tenders to include in the interestingness digest."
+          error={errors.topN}
+        >
+          <Input
+            id="int-topn"
+            type="number"
+            min={1}
+            max={1000}
+            step={1}
+            value={topN}
+            onChange={(e) => setTopN(Number(e.target.value))}
+          />
+        </Field>
+        <Field
+          label="Min score"
+          htmlFor="int-minscore"
+          hint="Minimum interestingness score (1–10) for a tender to be considered."
+          error={errors.minScore}
+        >
+          <Input
+            id="int-minscore"
+            type="number"
+            min={1}
+            max={10}
+            step={1}
+            value={minScore}
+            onChange={(e) => setMinScore(Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    </Section>
+  )
+}
+
+
+// === Digest Section ===
+
+function DigestSection({ data }: { data: DigestSettings }) {
+  const [thresholdTop, setThresholdTop] = useState(data.score_threshold_top)
+  const [thresholdFloor, setThresholdFloor] = useState(data.score_threshold_floor)
+  const [maxWorthALook, setMaxWorthALook] = useState(data.max_worth_a_look)
+  const [maxExcluded, setMaxExcluded] = useState(data.max_excluded_shown)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const mutation = useSaveSetting<DigestSettings>('digest')
+
+  useEffect(() => {
+    setThresholdTop(data.score_threshold_top)
+    setThresholdFloor(data.score_threshold_floor)
+    setMaxWorthALook(data.max_worth_a_look)
+    setMaxExcluded(data.max_excluded_shown)
+  }, [data])
+
+  function handleSave() {
+    const errs: Record<string, string> = {}
+    if (thresholdTop < 0 || thresholdTop > 10) errs.thresholdTop = 'Must be 0–10'
+    if (thresholdFloor < 0 || thresholdFloor > 10) errs.thresholdFloor = 'Must be 0–10'
+    if (thresholdTop <= thresholdFloor) errs.thresholdTop = 'Must be greater than floor threshold'
+    if (!Number.isInteger(maxWorthALook) || maxWorthALook < 1 || maxWorthALook > 1000) errs.maxWorthALook = 'Must be an integer between 1 and 1000'
+    if (!Number.isInteger(maxExcluded) || maxExcluded < 1 || maxExcluded > 1000) errs.maxExcluded = 'Must be an integer between 1 and 1000'
+    setErrors(errs)
+    if (Object.keys(errs).length > 0) return
+
+    mutation.mutate({
+      score_threshold_top: thresholdTop,
+      score_threshold_floor: thresholdFloor,
+      max_worth_a_look: maxWorthALook,
+      max_excluded_shown: maxExcluded,
+    })
+  }
+
+  return (
+    <Section
+      title="Digest"
+      description="Controls how tenders are bucketed and limited in the daily email digest."
+      updatedAt={data.updated_at}
+      isPending={mutation.isPending}
+      isSuccess={mutation.isSuccess}
+      error={mutation.error}
+      onSave={handleSave}
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Score threshold (top)"
+          htmlFor="dg-top"
+          hint="Minimum score for a tender to appear in the 'Top picks' section of the digest."
+          error={errors.thresholdTop}
+        >
+          <Input
+            id="dg-top"
+            type="number"
+            min={0}
+            max={10}
+            step={0.1}
+            value={thresholdTop}
+            onChange={(e) => setThresholdTop(Number(e.target.value))}
+          />
+        </Field>
+        <Field
+          label="Score threshold (floor)"
+          htmlFor="dg-floor"
+          hint="Minimum score for a tender to appear in the 'Worth a look' section. Must be lower than the top threshold."
+          error={errors.thresholdFloor}
+        >
+          <Input
+            id="dg-floor"
+            type="number"
+            min={0}
+            max={10}
+            step={0.1}
+            value={thresholdFloor}
+            onChange={(e) => setThresholdFloor(Number(e.target.value))}
+          />
+        </Field>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Max 'Worth a look'"
+          htmlFor="dg-worth"
+          hint="Maximum tenders shown in the 'Worth a look' section of each digest email."
+          error={errors.maxWorthALook}
+        >
+          <Input
+            id="dg-worth"
+            type="number"
+            min={1}
+            max={1000}
+            step={1}
+            value={maxWorthALook}
+            onChange={(e) => setMaxWorthALook(Number(e.target.value))}
+          />
+        </Field>
+        <Field
+          label="Max excluded shown"
+          htmlFor="dg-excluded"
+          hint="Maximum excluded tenders listed at the bottom of the digest for transparency."
+          error={errors.maxExcluded}
+        >
+          <Input
+            id="dg-excluded"
+            type="number"
+            min={1}
+            max={1000}
+            step={1}
+            value={maxExcluded}
+            onChange={(e) => setMaxExcluded(Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    </Section>
+  )
+}
+
+
 // === Main Page ===
 
 export default function SettingsPage() {
@@ -532,7 +790,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Configure scraper filters, analysis pipeline, company profile, and email delivery.
+          Configure scraper filters, analysis pipeline, interestingness scoring, company profile, email delivery, and digest.
         </p>
       </div>
 
@@ -542,11 +800,17 @@ export default function SettingsPage() {
       {data?.analysis && (
         <AnalysisSection data={data.analysis} />
       )}
+      {data?.interestingness && (
+        <InterestingnessSection data={data.interestingness} />
+      )}
       {data?.companyProfile && (
         <CompanyProfileSection data={data.companyProfile} />
       )}
       {data?.recipients && (
         <RecipientsSection data={data.recipients} />
+      )}
+      {data?.digest && (
+        <DigestSection data={data.digest} />
       )}
     </div>
   )

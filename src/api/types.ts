@@ -155,7 +155,7 @@ export interface PaginationParams {
 
 // === Settings ===
 
-export type SettingType = 'selection-criteria' | 'analysis' | 'company-profile' | 'recipients'
+export type SettingType = 'selection-criteria' | 'analysis' | 'company-profile' | 'recipients' | 'interestingness' | 'digest'
 
 export interface SelectionCriteriaSettings {
   setting_type: 'selection-criteria'
@@ -192,11 +192,31 @@ export interface RecipientsSettings {
   recipients: string[]
 }
 
+export interface InterestingnessSettings {
+  setting_type: 'interestingness'
+  updated_at: string
+  interest_profile: string
+  scoring_criteria: string[]
+  interestingness_top_n: number
+  interestingness_min_score: number
+}
+
+export interface DigestSettings {
+  setting_type: 'digest'
+  updated_at: string
+  score_threshold_top: number
+  score_threshold_floor: number
+  max_worth_a_look: number
+  max_excluded_shown: number
+}
+
 export type SettingResponse =
   | SelectionCriteriaSettings
   | AnalysisSettings
   | CompanyProfileSettings
   | RecipientsSettings
+  | InterestingnessSettings
+  | DigestSettings
 
 export interface SettingsListResponse {
   items: SettingResponse[]

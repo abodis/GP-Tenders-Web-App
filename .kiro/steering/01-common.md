@@ -113,3 +113,11 @@ src/
 - **Removing UI features instead of fixing data flow**: When list data is missing fields, check whether the API already provides them (or can trivially be updated to) before stripping columns from the UI.
 - **Displaying structured data over human-readable notes**: When API fields include both numeric/structured data and a `notes` field, prefer showing notes as the primary visible content. The structured data (counts, amounts, years) should be secondary (tooltip/hover). Notes capture the human-readable requirement; numbers are for verification.
 - **@base-ui/react import casing**: Subpath imports from `@base-ui/react` use lowercase module names (e.g. `@base-ui/react/tooltip`, `@base-ui/react/dialog`), not PascalCase. PascalCase paths will fail at build/test time with "not exported" errors.
+
+## Shell Command Rules
+
+- **Never use `cd`** — use the `cwd` parameter on execute_bash instead.
+- **No command chaining** (`&&`, `||`, `;`) unless both commands are trivially related (e.g. `git add && git commit`). Prefer separate tool calls.
+- **Piping for output truncation is allowed** (`| head`, `| tail`, `| grep`) — these are normal shell usage.
+- Workspace root is the default cwd. Only set `cwd` when running in a subdirectory.
+- These rules apply to subagents equally. Violations block autopilot approval.

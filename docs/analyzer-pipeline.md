@@ -65,7 +65,7 @@ Individual tender analysis failures are caught by the ItemCatcher and don't abor
 
 ## Phase 1: Trigger
 
-The Trigger Lambda (`src/handlers/trigger.py`) identifies which tenders need analysis.
+The Trigger Lambda (`batch/trigger.py`) identifies which tenders need analysis.
 
 1. Load infrastructure settings from `config/settings.yaml`.
 2. Retrieve the scraper API key from SSM Parameter Store (`/rfp-scraper/api-key`).
@@ -95,7 +95,7 @@ Tenders that fail selection are written to PostgreSQL immediately:
 
 ## Phase 2: Analysis
 
-The Analyzer Lambda (`src/handlers/analyzer.py`) processes a single tender, invoked in parallel by the Map state (concurrency 2).
+The Analyzer Lambda (`batch/analyzer.py`) processes a single tender, invoked in parallel by the Map state (concurrency 2).
 
 1. Load infrastructure settings from `config/settings.yaml` (LLM config, PostgreSQL, scraper API connection).
 2. Fetch analysis settings from the scraper API (`GET /settings/analysis`) to get `scoring_criteria`.
@@ -110,34 +110,39 @@ The Analyzer Lambda (`src/handlers/analyzer.py`) processes a single tender, invo
    - Required JSON output schema
 7. Call the LLM provider (Fireworks or Bedrock, configured in `settings.yaml`).
 8. Parse the JSON response into an `AnalysisResult` (handles markdown code block wrapping).
-9. Write analysis fields to PostgreSQL via `AnalysisWriter` (`src/storage/postgres.py`).
-10. Return the result dict for the Map state output.
+9. Write analysis fields to PostgreSQL via `AnalysisWriter` (`shared/storage/postgres.py`).
+10. Extract team requirements via LLM (non-blocking on failure) and write to `team_requirements` JSONB column.
+11. Run team match fitness scoring against the team roster (non-blocking on failure). If team requirements were extracted, computes per-role match scores and writes to `team_match_result` JSONB column.
+12. Return the result dict for the Map state output.
 
 ### LLM Providers
 
-The analyzer supports two LLM backends, selected by `settings.llm.provider`:
+The analyzer supports three LLM backends, selected by `settings.llm.provider`:
 
 | Provider | Endpoint | Auth | Model (current) |
 |----------|----------|------|-----------------|
-| Fireworks | `https://api.fireworks.ai/inference/v1/chat/completions` | Bearer token (Secrets Manager) | `llama-v3p3-70b-instruct` |
+| OpenRouter | `https://openrouter.ai/api/v1/chat/completions` | Bearer token (env var) | `openai/gpt-4.1-mini` (local dev) |
+| Fireworks | `https://api.fireworks.ai/inference/v1/chat/completions` | Bearer token (SSM/env var) | `gpt-oss-120b` (production) |
 | Bedrock | `bedrock-runtime` (boto3, eu-central-1) | IAM role | `anthropic.claude-3-haiku-20240307-v1:0` |
 
-Both adapters use the same prompt builder and response parser. The `LLMProvider` abstract interface ensures they're interchangeable.
+All adapters use the same prompt builder and response parser via the `LLMProvider` abstract interface. OpenRouter includes schema transformation for OpenAI strict mode compatibility (`additionalProperties: false`, all properties in `required`).
 
 ### Retry Logic
 
 LLM calls are wrapped in `call_with_retry` with exponential backoff:
 - Max retries: 3
-- Intervals: 3s, 8s, 15s
-- Retryable errors: `RateLimitError`, `TimeoutError`, `ConnectionError`
+- Intervals: 2s, 4s, 8s
+- Retryable errors: `RateLimitError`, `TimeoutError`, `ConnectionError`, `OversizedResponseError`
 
-The Fireworks adapter explicitly detects HTTP 429 responses and raises `RateLimitError` before `raise_for_status()`, ensuring rate-limit responses are retried rather than surfacing as generic HTTP errors.
+The OpenRouter adapter includes additional extraction-level retry (max 2 attempts) for:
+- **Oversized responses** (>8K chars): model sometimes echoes input back instead of producing concise JSON.
+- **JSON parse failures**: retried once before propagating.
 
 On exhaustion, the last error propagates and the Map state's ItemCatcher records the failure.
 
 ### Response Parsing
 
-The parser (`src/analysis/parser.py`):
+The parser (`shared/llm/parser.py`):
 1. Strips optional markdown code block wrapping (` ```json ... ``` `).
 2. Applies light repairs for common LLM JSON mistakes (e.g. trailing commas, unquoted keys).
 3. Parses JSON.
@@ -147,24 +152,52 @@ Raises `LLMParsingError` on invalid JSON or schema mismatch.
 
 ## Phase 3: Email
 
-The Email Lambda (`src/handlers/email_handler.py`) assembles and sends the daily digest.
+The Email Lambda (`batch/email_handler.py`) assembles and sends the daily digest.
 
 1. Load infrastructure settings from `config/settings.yaml` (PostgreSQL, SES connection).
 2. Retrieve the scraper API key from SSM Parameter Store (`/rfp-scraper/api-key`).
-3. Fetch analysis settings from the scraper API (`GET /settings/analysis`) to get `score_threshold_for_email`.
-4. Fetch recipients from the scraper API (`GET /settings/recipients`) to get the email recipient list.
-5. Fetch today's scraper run from the API (`GET /sources/{source_id}/runs/{today}`) for the run summary.
-6. Query PostgreSQL for tenders where `analyzed_at` is set and `emailed_at` is null.
-7. Filter by `score_threshold_for_email` (from API settings, default: 5) — tenders below this score are excluded.
-8. Build the digest:
-   - Separate top-ranked tenders (score >= 7), sorted by score descending.
-   - Group remaining tenders by `tender_type` in canonical order: `full_proposal`, `expression_of_interest`, `request_to_participate`.
-   - Compute stats: total count, average score, new-since-last count.
-9. Render the HTML email template (`templates/digest.html.j2`) with Jinja2, passing the latest scraper run data alongside the digest data.
-10. Send via SES to all configured recipients (from API settings). An email is always sent — either a full digest or a summary-only email with run stats.
-11. Update `emailed_at` for every tender included in the digest.
+3. Fetch recipients from the scraper API (`GET /settings/recipients`).
+4. Fetch today's scraper run from the API for the run summary.
+5. Query PostgreSQL for two lists:
+   - **Main tenders**: `unified_score IS NOT NULL AND analyzed_at IS NOT NULL AND emailed_at IS NULL AND not excluded`
+   - **Excluded tenders**: `exclusion_result->>'excluded' = 'true' AND emailed_at IS NULL AND unified_score IS NOT NULL`
+6. Load digest settings from `SETTINGS#digest` (thresholds + display caps) with defaults.
+7. Build the digest using `DigestBuilder.build_digest()`:
+   - **Top Opportunities**: `unified_score >= score_threshold_top` (default 6.0), max 5, sorted desc.
+   - **Worth a Look**: overflow from top + `unified_score >= score_threshold_floor` (default 3.0), max 20, sorted desc.
+   - **Excluded Today**: excluded tenders, max 10, sorted by title.
+   - Compute stats: total count, average score, new-since-last count, excluded overflow count.
+8. For each tender, extract assessment fields from JSONB columns:
+   - Team match: role counts, weak-fit detection (match_score < 0.5), gap descriptions.
+   - Reference match: requirement counts, unmatched requirement descriptions.
+   - Exclusion: status + first reason.
+   - Document truncation flag (`docs_truncated`).
+9. Render HTML email template (`batch/templates/digest.html.j2`) with Jinja2.
+10. Send via SES to all configured recipients. Email is always sent — full digest or empty-state message.
+11. Update `emailed_at` for tenders in Top Opportunities + Worth a Look only (not excluded).
 
-The Lambda always sends an email — either a full digest when tenders qualify, or a run-summary-only email when none do. The latest scraper run stats are fetched directly from the scraper API, so recipients can see what happened during the most recent scraper run even when no tenders qualify for the digest.
+### Digest Settings (SETTINGS#digest)
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `score_threshold_top` | 6.0 | Minimum unified_score for Top Opportunities |
+| `score_threshold_floor` | 3.0 | Minimum unified_score for Worth a Look |
+| `max_worth_a_look` | 20 | Maximum tenders in Worth a Look section |
+| `max_excluded_shown` | 10 | Maximum tenders shown in Excluded Today |
+
+### Email Template
+
+Each tender card shows (in order):
+1. **Title + unified score badge** (green ≥7, amber 4-6.9, red <4)
+2. **Metadata**: organization, tender type, deadline, budget, portal link
+3. **Summary**: AI-generated description of the tender
+4. **Assessment section**:
+   - Team: "X/Y roles covered — Weak fit: ..." or "No team requirements discovered"
+   - References: "X/Y met — Missing: ..." or "No reference requirements discovered"
+   - Exclusion: status + reason (when evaluated)
+   - ⚠ Incomplete review warning (when `docs_truncated = true`)
+
+The template uses inline CSS only (no `<style>` blocks) for email client compatibility.
 
 ## Tender Analysis Lifecycle
 
@@ -206,11 +239,11 @@ The Lambda always sends an email — either a full digest when tenders qualify, 
 
 | Function | Name | Handler | Timeout | Memory |
 |----------|------|---------|---------|--------|
-| Trigger | `rfp-analyzer-trigger-dev` | `src.handlers.trigger.handler` | 60s | 256 MB |
-| Analyzer | `rfp-analyzer-analyzer-dev` | `src.handlers.analyzer.handler` | 120s | 256 MB |
-| Email | `rfp-analyzer-email-dev` | `src.handlers.email_handler.handler` | 60s | 256 MB |
+| Trigger | `rfp-analyzer-trigger-dev` | `batch.trigger.handler` | 60s | 256 MB |
+| Analyzer | `rfp-analyzer-analyzer-dev` | `batch.analyzer.handler` | 120s | 256 MB |
+| Email | `rfp-analyzer-email-dev` | `batch.email_handler.handler` | 60s | 256 MB |
 
-All Lambdas run Python 3.12 on ARM64. Code is bundled via Docker with `requirements-lambda.txt` (runtime deps only: pydantic, pyyaml, httpx, boto3, jinja2, psycopg2-binary) plus `src/`, `config/`, and `templates/` directories.
+All Lambdas run Python 3.12 on ARM64. Code is bundled via Docker with `requirements-lambda.txt` (runtime deps only: pydantic, pyyaml, httpx, boto3, jinja2, psycopg2-binary) plus `batch/`, `shared/`, `extraction/`, and `config/` directories.
 
 ### VPC Networking
 
@@ -220,19 +253,19 @@ DB credentials (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`) are injec
 
 ### IAM Permissions
 
-| Lambda | Permission | Resource |
-|--------|-----------|----------|
-| Trigger | `ssm:GetParameter` | `/rfp-scraper/api-key` |
-| Trigger | RDS (PostgreSQL) | `tenders` table (via VPC + security group) |
-| Analyzer | `ssm:GetParameter` | `/rfp-scraper/api-key` |
-| Analyzer | RDS (PostgreSQL) | `tenders` table (via VPC + security group) |
-| Analyzer | `secretsmanager:GetSecretValue` | `rfp-analyzer/fireworks-api-key` |
-| Analyzer | `bedrock:InvokeModel` | `arn:aws:bedrock:eu-central-1:*` |
-| Email | `ssm:GetParameter` | `/rfp-scraper/api-key` |
-| Email | RDS (PostgreSQL) | `tenders` table (via VPC + security group) |
-| Email | `ses:SendEmail` | `*` |
-| Email | `secretsmanager:GetSecretValue` | `rfp-analyzer/fireworks-api-key` |
-| Email | `secretsmanager:GetSecretValue` | `rfp-analyzer/scraper-api-key` |
+| Lambda   | Permission                      | Resource                                   |
+| ----------| ---------------------------------| --------------------------------------------|
+| Trigger  | `ssm:GetParameter`              | `/rfp-scraper/api-key`                     |
+| Trigger  | RDS (PostgreSQL)                | `tenders` table (via VPC + security group) |
+| Analyzer | `ssm:GetParameter`              | `/rfp-scraper/api-key`                     |
+| Analyzer | RDS (PostgreSQL)                | `tenders` table (via VPC + security group) |
+| Analyzer | `secretsmanager:GetSecretValue` | `rfp-analyzer/fireworks-api-key`           |
+| Analyzer | `bedrock:InvokeModel`           | `arn:aws:bedrock:eu-central-1:*`           |
+| Email    | `ssm:GetParameter`              | `/rfp-scraper/api-key`                     |
+| Email    | RDS (PostgreSQL)                | `tenders` table (via VPC + security group) |
+| Email    | `ses:SendEmail`                 | `*`                                        |
+| Email    | `secretsmanager:GetSecretValue` | `rfp-analyzer/fireworks-api-key`           |
+| Email    | `secretsmanager:GetSecretValue` | `rfp-analyzer/scraper-api-key`             |
 
 ### Alerting
 
@@ -246,15 +279,15 @@ An SNS topic (`rfp-analyzer-alerts-dev`) delivers alarm notifications via email.
 
 ### Other Resources
 
-| Resource | Type | Notes |
-|----------|------|-------|
-| `rfp-analyzer-pipeline-dev` | Step Functions (Standard) | Orchestrates the three Lambdas |
-| `rfp-analyzer-schedule-dev` | EventBridge Rule | `cron(0 5 * * ? *)` (daily at 05:00 UTC) → triggers the state machine |
-| `rfp-analyzer-nat-dev` | NAT Gateway | eu-south-2b, uses EIP `eipalloc-021c85231980ac9ae` |
-| Private subnet `172.31.48.0/24` | VPC Subnet | CDK-managed, eu-south-2b, routes 0.0.0.0/0 → NAT |
-| `rfp-analyzer-alerts-dev` | SNS Topic | Email subscription for alarm notifications |
-| CloudWatch Log Groups | 30-day retention | One per Lambda |
-| `rfp-analyzer/fireworks-api-key` | Secrets Manager | Fireworks LLM API key |
-| `rfp-analyzer/scraper-api-key` | Secrets Manager | Scraper API key (CDK-managed, but pipeline uses SSM) |
+| Resource                         | Type                      | Notes                                                                 |
+| ----------------------------------| ---------------------------| -----------------------------------------------------------------------|
+| `rfp-analyzer-pipeline-dev`      | Step Functions (Standard) | Orchestrates the three Lambdas                                        |
+| `rfp-analyzer-schedule-dev`      | EventBridge Rule          | `cron(0 5 * * ? *)` (daily at 05:00 UTC) → triggers the state machine |
+| `rfp-analyzer-nat-dev`           | NAT Gateway               | eu-south-2b, uses EIP `eipalloc-021c85231980ac9ae`                    |
+| Private subnet `172.31.48.0/24`  | VPC Subnet                | CDK-managed, eu-south-2b, routes 0.0.0.0/0 → NAT                      |
+| `rfp-analyzer-alerts-dev`        | SNS Topic                 | Email subscription for alarm notifications                            |
+| CloudWatch Log Groups            | 30-day retention          | One per Lambda                                                        |
+| `rfp-analyzer/fireworks-api-key` | Secrets Manager           | Fireworks LLM API key                                                 |
+| `rfp-analyzer/scraper-api-key`   | Secrets Manager           | Scraper API key (CDK-managed, but pipeline uses SSM)                  |
 
 Region: `eu-south-2` (except Bedrock which uses `eu-central-1` and SES which uses `eu-west-3`).

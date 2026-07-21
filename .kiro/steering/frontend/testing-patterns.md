@@ -7,6 +7,14 @@ keywords: ["testing", "vitest", "fast-check", "property-based"]
 
 # Testing Patterns
 
+## Project Testing Philosophy
+
+- Backend runs locally during dev — verify against real API, not mocks
+- Playwright smoke tests are the primary verification method (page loads, fields render, save round-trips)
+- No unit or integration test suites for new features — product is evolving fast, automated tests are a maintenance burden at this stage
+- Use Playwright browser automation to click through and verify pages work end-to-end
+- The patterns below exist for legacy/existing tests only; do not write new unit tests unless explicitly asked
+
 ## Test Runner
 
 - Vitest with jsdom environment

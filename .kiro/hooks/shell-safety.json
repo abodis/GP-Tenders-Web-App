@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Shell Command Safety",
+      "trigger": "PreToolUse",
+      "description": "Blocks execute_bash calls that use cd or command chaining (&&, ||, ;). Piping (|) is allowed.",
+      "matcher": "execute_bash",
+      "action": {
+        "type": "command",
+        "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));const c=d.toolInput?.command||'';const errs=[];if(/^\\s*cd\\s/.test(c))errs.push('Use cwd parameter instead of cd command');if(/&&/.test(c)&&!/git\\s+(add|commit)/.test(c))errs.push('Avoid && chaining - use separate tool calls');if(/\\|\\|/.test(c))errs.push('Avoid || chaining - use separate tool calls');if(/;/.test(c)&&!/git\\s+(add|commit)/.test(c))errs.push('Avoid ; chaining - use separate tool calls');if(errs.length){process.stderr.write(errs.join('. '));process.exit(2)}else{process.stdout.write(JSON.stringify({hookSpecificOutput:{permissionDecision:'allow'}}))}\"",
+        "timeout": 10
+      }
+    }
+  ]
+}

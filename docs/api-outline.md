@@ -10,13 +10,14 @@ Quick reference for the `rfp-web` React SPA. Covers authentication, CORS, endpoi
 | Auth | `x-api-key` header (value stored in SSM `/rfp-scraper/api-key`, eu-south-2) |
 | Protocol | HTTPS only, JSON responses |
 | OpenAPI docs | `{base_url}/docs` (requires auth) |
+| OpenAPI spec | `docs/openapi.yaml` (generated from FastAPI) |
 
 ## CORS
 
 The API allows cross-origin requests from any origin. Configuration:
 
 - `Access-Control-Allow-Origin: *`
-- Allowed methods: `GET`, `PUT`, `OPTIONS`
+- Allowed methods: `GET`, `PUT`, `POST`, `DELETE`, `OPTIONS`
 - Allowed headers: `x-api-key`, `Content-Type`
 - OPTIONS preflight is handled at API Gateway level (no auth required)
 
@@ -53,6 +54,30 @@ async function apiPut<T>(path: string, body: unknown): Promise<T> {
   }
   return res.json();
 }
+
+async function apiPost<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(new URL(path, API_BASE).toString(), {
+    method: "POST",
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiDelete(path: string): Promise<void> {
+  const res = await fetch(new URL(path, API_BASE).toString(), {
+    method: "DELETE",
+    headers,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+}
 ```
 
 ## Response Envelopes
@@ -66,7 +91,6 @@ interface PaginatedResponse<T> {
   total_count: number | null;  // total items matching filters (before pagination); null when unavailable
   page: number;                // current page number (1-based)
   total_pages: number | null;  // total number of pages; null when unavailable
-  next_cursor: string | null;  // backward-compatible cursor; non-null when more pages exist
 }
 ```
 
@@ -86,7 +110,6 @@ Offset-based. Use `page` (1-based) and `page_size` to navigate results.
 - `page_size` — 1 to 100, default 20
 - `page` — 1-based page number, default 1
 - Response includes `total_count` and `total_pages` for building pagination UI
-- `next_cursor` is included for backward compatibility but pagination is driven by `page`
 
 ## Endpoints
 
@@ -112,7 +135,9 @@ Query params:
 | `analyzed` | bool | — | `true` = analyzed only, `false` = unanalyzed only |
 | `min_score` | int | — | Minimum `relevance_score` (0–10) |
 | `tender_type` | string | — | Exact match: `request_to_participate`, `expression_of_interest`, `full_proposal` |
-| `sort_by` | string | — | `relevance_score`, `budget`, or `deadline`; omit for default `discovered_at` desc. Returns 400 for invalid values |
+| `min_interestingness` | int | — | Minimum `interestingness_score` (1–10) |
+| `q` | string | — | Full-text search (max 500 chars); searches title, organization, sectors, location |
+| `sort_by` | string | — | `relevance_score`, `budget`, `deadline`, `interestingness_score`, or `unified_score`; omit for default `discovered_at` desc. Returns 400 for invalid values |
 | `sort_direction` | string | `desc` | `asc` or `desc`. Applies to `sort_by` field; nulls always sort last regardless of direction |
 | `page_size` | int | 20 | 1–100 |
 | `page` | int | 1 | Page number (1-based) |
@@ -142,9 +167,13 @@ interface TenderListItem {
   analysis_tags: string[];         // empty array if unanalyzed
   tender_type: string | null;
   analyzed_at: string | null;      // ISO datetime
-  organization: string | null;
+  interestingness_score: number | null;
+  interestingness_reasoning: string | null;
+  unified_score: number | null;
 }
 ```
+
+**Search behavior:** When `q` is provided, results are ranked by full-text relevance (`ts_rank`) instead of the requested `sort_by`. Whitespace-only or empty `q` is ignored. Over 500 chars returns 400.
 
 Example calls:
 
@@ -184,8 +213,123 @@ interface TenderDetailResponse extends TenderListItem {
   experts_required: object | null;     // {international, local, key_experts, total, notes}
   references_required: object | null;  // {count, type, value_eur, timeline_years, notes}
   turnover_required: object | null;    // {annual_eur, years, notes}
+  team_requirements: object | null;    // extracted team roles (see POST extract-team)
+  team_match_result: object | null;   // team match fitness scoring result (see POST team-match)
 }
 ```
+
+---
+
+### GET /tenders/{source_id}/{tender_id}/audit
+
+Return the audit trail for a tender — one record per scoring step, ordered by `created_at` descending.
+
+Query params:
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `step` | string | — | Filter by step: `analysis`, `team_extraction`, `team_match`, `reference_extraction`, `reference_match`, `exclusion`, `interestingness`, `unified_score`. Invalid value → 400 |
+| `run_id` | UUID | — | Filter by analysis run. Invalid UUID format → 400 |
+
+Response: array of audit records.
+
+```ts
+interface AuditRecord {
+  id: string;                   // UUID
+  step: string;                 // scoring step name
+  run_id: string | null;        // UUID of the analysis run
+  created_at: string;           // ISO datetime
+  input_snapshot: object;       // what went into the step (hashed text, metadata)
+  output: object;               // what the step produced (scores, extractions)
+  model: string | null;         // LLM model used (null for deterministic steps)
+  model_version: string | null;
+  duration_ms: number | null;   // wall-clock time for the step
+}
+```
+
+Error responses:
+- 400 — invalid `step` value or invalid `run_id` UUID format
+- 404 — tender not found
+
+---
+
+### POST /tenders/{source_id}/{tender_id}/extract-team
+
+Trigger team requirement extraction for a single tender. Reads documents from S3 (PDF, DOCX), prioritizes ToR documents, and extracts structured team requirements via LLM.
+
+Preconditions: tender must be `completed` with an `s3_prefix`.
+
+Response:
+
+```ts
+interface ExtractTeamResponse {
+  team_requirements: TeamRequirement[];
+  total_experts_required: number | null;
+  extraction_confidence: "high" | "medium" | "low";
+  extraction_source: "documents" | "description";  // which text was used
+  documents_used: string[];                         // filenames read from S3
+}
+
+interface TeamRequirement {
+  role: string;
+  specializations: string[];
+  mandatory: boolean;
+  min_years: number | null;
+  languages: string[];
+  notes: string | null;
+}
+```
+
+Falls back to `description.txt` if no PDF/DOCX documents are available. Returns 400 if neither source has text.
+
+---
+
+### POST /tenders/{source_id}/{tender_id}/team-match
+
+Run team match fitness scoring against the current team roster. Requires that `team_requirements` has already been extracted (via `POST extract-team` or batch pipeline).
+
+Preconditions: tender must have non-null `team_requirements`.
+
+Response:
+
+```ts
+interface TeamMatchResult {
+  team_match_score: number;           // 0.0–1.0 (4 decimal places)
+  role_matches: RoleMatch[];
+  gaps: GapEntry[];
+  external_experts_needed: number;    // count of roles with status "gap"
+  message: string | null;             // e.g. "No team members available for matching"
+}
+
+interface RoleMatch {
+  required_role: string;
+  mandatory: boolean;
+  best_match: BestMatch | null;       // null when no roster members exist
+  match_score: number;                // 0.0–1.0
+  status: "matched" | "partial" | "gap";
+}
+
+interface BestMatch {
+  id: string;                         // team member UUID
+  name: string;
+  type: "employee" | "contractor";
+  match_score: number;
+  duplicate_roles: string[];          // other roles this member is also best match for
+}
+
+interface GapEntry {
+  role: string;
+  mandatory: boolean;
+  severity: "high" | "low";           // "high" for mandatory, "low" for desirable
+}
+```
+
+Error responses:
+- 404 — tender not found
+- 400 — no `team_requirements` extracted for this tender
+- 500 — matcher internal error
+
+The result is persisted to the `team_match_result` JSONB column and returned on subsequent `GET /tenders/{source_id}/{tender_id}` calls.
 
 ---
 
@@ -209,6 +353,270 @@ Single document presigned URL: `{"filename": "...", "url": "..."}`.
 
 ---
 
+### POST /team
+
+Create a new team member.
+
+Request:
+
+```ts
+interface TeamMemberCreate {
+  name: string;                          // 1–200 chars
+  email: string;                         // valid email, unique
+  type: "employee" | "contractor";
+  roles: string[];                       // optional, max 20 items, each max 100 chars
+}
+```
+
+Response: `TeamMemberResponse` (201 Created). Returns 409 if email already exists.
+
+---
+
+### GET /team
+
+Paginated team member list.
+
+Query params:
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `page` | int | 1 | 1-based |
+| `page_size` | int | 20 | 1–100 |
+| `type` | string | — | `employee` or `contractor` |
+| `search` | string | — | Searches name and email |
+
+Response item shape:
+
+```ts
+interface TeamMemberListItem {
+  id: string;             // UUID
+  name: string;
+  email: string | null;
+  type: "employee" | "contractor";
+  roles: string[];
+  extraction_status: "pending" | "completed" | "failed";
+}
+```
+
+---
+
+### GET /team/{id}
+
+Get a single team member by UUID.
+
+Response:
+
+```ts
+interface TeamMemberResponse {
+  id: string;
+  name: string;
+  email: string | null;
+  type: "employee" | "contractor";
+  slug: string;
+  phone: string | null;
+  roles: string[];
+  specializations: string[];     // extracted from CV
+  languages: string[];           // extracted from CV
+  notes: string | null;
+  cv_s3_key: string | null;
+  knowledge_s3_key: string | null;
+  extraction_status: "pending" | "completed" | "failed";
+  created_at: string;            // ISO datetime
+  updated_at: string;            // ISO datetime
+}
+```
+
+---
+
+### PUT /team/{id}
+
+Partial update of a team member. Only include fields to change.
+
+Request:
+
+```ts
+interface TeamMemberUpdate {
+  name?: string;         // 1–200 chars
+  email?: string;        // valid email, unique
+  phone?: string;        // max 50 chars
+  roles?: string[];      // max 20 items
+  notes?: string;        // max 10000 chars — triggers re-extraction if CV exists
+}
+```
+
+Response: `TeamMemberResponse`. Returns 409 if email conflicts.
+
+---
+
+### DELETE /team/{id}
+
+Delete a team member and associated S3 files (CV, knowledge). Returns 204 No Content.
+
+---
+
+### POST /team/{id}/cv
+
+Upload a CV file for extraction. Multipart form data with `file` field.
+
+- Formats: PDF, DOCX
+- Max size: 10MB
+- Triggers automatic extraction of roles, specializations, and languages via LLM
+
+Response: `TeamMemberResponse` with updated `extraction_status` (`completed` or `failed`).
+
+---
+
+### POST /references
+
+Create a new project reference. Triggers LLM extraction if description is provided.
+
+Request:
+
+```ts
+interface ReferenceCreate {
+  title: string;                    // 1–500 chars, required
+  client?: string;
+  sector?: string;
+  region?: string;
+  year?: number;                    // 1990–2030
+  budget_eur?: number;              // >= 0
+  description?: string;             // triggers LLM extraction
+  experts_involved?: string[];      // team member UUIDs, max 50
+  consortium_partners?: string[];
+}
+```
+
+Response: `ReferenceResponse` (201 Created). If description present, `extraction_status` will be "completed" or "failed".
+
+---
+
+### GET /references
+
+Paginated reference list with filtering.
+
+Query params:
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `page` | int | 1 | 1-based |
+| `page_size` | int | 20 | 1–100 |
+| `sector` | string | — | Exact match |
+| `year` | int | — | Exact match |
+| `search` | string | — | Searches title and client (max 200 chars) |
+
+Response item shape:
+
+```ts
+interface ReferenceListItem {
+  id: string;
+  title: string;
+  client: string | null;
+  sector: string | null;
+  year: number | null;
+  budget_eur: number | null;
+  extraction_status: "pending" | "processing" | "completed" | "failed";
+}
+```
+
+---
+
+### GET /references/{id}
+
+Full reference detail with enriched experts and document presigned URLs.
+
+Response:
+
+```ts
+interface ReferenceResponse {
+  id: string;
+  title: string;
+  client: string | null;
+  sector: string | null;
+  region: string | null;
+  year: number | null;
+  budget_eur: number | null;
+  description: string | null;
+  experts_involved: string[];
+  consortium_partners: string[];
+  documents: string[];
+  knowledge_s3_key: string | null;
+  extraction_status: string;
+  extracted_fields: object;          // LLM-extracted: type, themes, donor, countries, budget_range, key_deliverables
+  slug: string;
+  created_at: string;
+  updated_at: string;
+  enriched_experts: EnrichedExpert[];  // resolved from team_members
+  document_urls: DocumentInfo[];       // presigned S3 URLs (1hr expiry)
+}
+
+interface EnrichedExpert {
+  id: string;
+  name: string;
+  roles: string[];
+}
+
+interface DocumentInfo {
+  filename: string;
+  presigned_url: string;
+}
+```
+
+---
+
+### PUT /references/{id}
+
+Partial update. At least one field required. Re-extracts if description changes.
+
+Request:
+
+```ts
+interface ReferenceUpdate {
+  title?: string;
+  client?: string;
+  sector?: string;
+  region?: string;
+  year?: number;
+  budget_eur?: number;
+  description?: string;
+  experts_involved?: string[];
+  consortium_partners?: string[];
+}
+```
+
+Response: `ReferenceResponse`. Returns 422 if no fields provided.
+
+---
+
+### DELETE /references/{id}
+
+Delete reference and all associated S3 objects (documents + knowledge file). Returns 204.
+
+Error: 500 if S3 deletion fails (DB record preserved).
+
+---
+
+### POST /references/{id}/document
+
+Upload a document (PDF/DOCX) to a reference. Triggers re-extraction.
+
+- Multipart form data with `file` field
+- Formats: PDF, DOCX
+- Max size: 10MB
+- Max 10 documents per reference
+- Duplicate filenames return 409
+
+Response: `ReferenceResponse` (201 Created) with updated extraction results.
+
+---
+
+### DELETE /references/{id}/document/{filename}
+
+Delete a specific document from a reference. Re-extracts from remaining context.
+
+Returns 204. Returns 502 if S3 deletion fails.
+
+---
+
 ### GET /settings
 
 List all settings. Returns only items that exist in the database (missing items are omitted, not returned as null).
@@ -228,7 +636,7 @@ When no settings exist, returns `{ items: [], count: 0 }`.
 
 ### GET /settings/{setting_type}
 
-Get a single setting. Valid types: `selection-criteria`, `analysis`, `company-profile`, `recipients`.
+Get a single setting. Valid types: `selection-criteria`, `analysis`, `company-profile`, `recipients`, `interestingness`, `digest`.
 
 Response: `SettingResponse` (see below). Returns 404 if the setting doesn't exist, 400 if the type is invalid.
 
@@ -276,6 +684,16 @@ Request bodies per type:
 ```json
 {
   "recipients": ["user@example.com"]
+}
+```
+
+**digest:**
+```json
+{
+  "score_threshold_top": 6.0,
+  "score_threshold_floor": 3.0,
+  "max_worth_a_look": 20,
+  "max_excluded_shown": 10
 }
 ```
 
@@ -360,9 +778,12 @@ Tenders linked to a run. Param: `phase=discovered|processed` (default: `discover
 
 | Status | Meaning |
 |--------|---------|
-| 400 | Invalid query params (bad `sort_by`, empty `source_id`) |
-| 404 | Tender, run, source, or document not found |
+| 400 | Invalid query params (bad `sort_by`, empty `source_id`, invalid type) |
+| 404 | Tender, run, source, document, or team member not found |
 | 403 | Invalid or missing `x-api-key` |
+| 409 | Conflict (e.g. duplicate email for team member) |
+| 413 | File too large (CV upload) |
+| 422 | Validation error (invalid UUID, bad request body) |
 | 500 | Internal server error |
 
 All errors return `{"detail": "...", "status_code": N}`.
@@ -378,7 +799,7 @@ All errors return `{"detail": "...", "status_code": N}`.
 
 ## Analysis Fields
 
-Analysis fields are written by the separate `rfp-analyzer` service. They're nullable — unanalyzed tenders have `null` for scalar fields and `[]` for `analysis_tags`.
+Analysis fields are written by the analyzer batch pipeline. They're nullable — unanalyzed tenders have `null` for scalar fields and `[]` for `analysis_tags`.
 
 - `relevance_score` — 0 to 10 integer
 - `analysis_summary` — AI-generated one-paragraph summary
@@ -394,6 +815,8 @@ Detail-only fields (only on `GET /tenders/{source_id}/{tender_id}`):
 - `experts_required` — structured extraction: `{international, local, key_experts, total, notes}`
 - `references_required` — structured extraction: `{count, type, value_eur, timeline_years, notes}`
 - `turnover_required` — structured extraction: `{annual_eur, years, notes}`
+- `team_requirements` — LLM-extracted team roles (same shape as `POST extract-team` response, minus `extraction_source` and `documents_used`)
+- `team_match_result` — deterministic team match fitness scoring result (same shape as `POST team-match` response)
 
 ## Presigned URL Expiry
 

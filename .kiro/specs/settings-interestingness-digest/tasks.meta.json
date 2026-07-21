@@ -1,0 +1,80 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Add InterestingnessSettings and DigestSettings interfaces, extend SettingType union and SettingResponse union": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644592763
+      },
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644603931
+      }
+    ],
+    "2.1 Add interestingness and digest properties to useSettings select function": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644592810
+      }
+    ],
+    "3.1 Install the `marked` package": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644592863
+      }
+    ],
+    "3.2 Create `src/components/MarkdownPreview.tsx`": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644592917
+      }
+    ],
+    "4. Checkpoint - Ensure types, hook, and MarkdownPreview compile": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644592980
+      }
+    ],
+    "5.1 Add InterestingnessSection component inline in SettingsPage.tsx": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644593023
+      }
+    ],
+    "6.1 Add DigestSection component inline in SettingsPage.tsx": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644593071
+      }
+    ],
+    "7.1 Add forbidden criteria check to AnalysisSection handleSave": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644593115
+      }
+    ],
+    "8.1 Wire new sections into SettingsPage layout in correct order and update header": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644593155
+      }
+    ],
+    "9. Final checkpoint - Ensure build passes and app renders correctly": [
+      {
+        "executionId": "abaa37de-51b3-4ed4-bf4e-d8f0dc2dbc06",
+        "chatSessionId": "sess_cd2fcf81-f52b-4fc1-8a86-671100cbef82",
+        "timestamp": 1784644593198
+      }
+    ]
+  }
+}

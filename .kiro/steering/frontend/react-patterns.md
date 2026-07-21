@@ -84,3 +84,8 @@ export function useTenderDetail(sourceId: string, tenderId: string) {
   - Set `min-w-[Npx]` on `<SelectTrigger>` to prevent narrow collapsed triggers
   - `<SelectContent>` popup uses `min-w-(--anchor-width)` so it can grow wider than the trigger
   - Example: `<Select value={v} onValueChange={fn} items={[{ value: '__all__', label: 'All' }, ...]}>`
+
+## Verification
+
+- Final checkpoint for UI features: run dev server + browser check against local backend (not just `tsc --noEmit` and `npm run build`)
+- Confirm new sections render with live API data, interactive elements work (toggles, inputs), and conditional rendering handles missing data gracefully

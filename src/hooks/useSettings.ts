@@ -7,6 +7,8 @@ import type {
   AnalysisSettings,
   CompanyProfileSettings,
   RecipientsSettings,
+  InterestingnessSettings,
+  DigestSettings,
 } from '@/api/types'
 
 const SETTINGS_KEY = ['settings'] as const
@@ -25,6 +27,8 @@ export function useSettings() {
         analysis: map.get('analysis') as AnalysisSettings | undefined,
         companyProfile: map.get('company-profile') as CompanyProfileSettings | undefined,
         recipients: map.get('recipients') as RecipientsSettings | undefined,
+        interestingness: map.get('interestingness') as InterestingnessSettings | undefined,
+        digest: map.get('digest') as DigestSettings | undefined,
       }
     },
   })
