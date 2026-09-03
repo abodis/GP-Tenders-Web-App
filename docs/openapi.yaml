@@ -229,9 +229,7 @@ paths:
   /tenders/{source_id}/{tender_id}:
     get:
       summary: Get Tender
-      description:
-        Get full tender detail by PK, merging S3 content for completed
-        tenders.
+      description: Get full tender detail by PK, merging S3 content for completed tenders.
       operationId: get_tender_tenders__source_id___tender_id__get
       parameters:
         - name: source_id
@@ -302,9 +300,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AuditRecordResponse"
-                title:
-                  Response Get Tender Audit Tenders  Source Id   Tender Id  Audit
-                  Get
+                title: Response Get Tender Audit Tenders  Source Id   Tender Id  Audit Get
         "422":
           description: Validation Error
           content:
@@ -391,7 +387,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TeamRequirementsExtractionResponse"
+                type: object
+                additionalProperties: true
+                title: Response Extract Team Tenders  Source Id   Tender Id  Extract Team Post
         "422":
           description: Validation Error
           content:
@@ -422,7 +420,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReferenceRequirementsExtractionResponse"
+                type: object
+                additionalProperties: true
+                title: Response Extract References Tenders  Source Id   Tender Id  Extract References Post
         "422":
           description: Validation Error
           content:
@@ -453,7 +453,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ExclusionResultResponse"
+                type: object
+                additionalProperties: true
+                title: Response Check Exclusion Tenders  Source Id   Tender Id  Check Exclusion Post
         "422":
           description: Validation Error
           content:
@@ -484,7 +486,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TeamMatchResult"
+                type: object
+                additionalProperties: true
+                title: Response Team Match Tenders  Source Id   Tender Id  Team Match Post
         "422":
           description: Validation Error
           content:
@@ -515,7 +519,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReferenceMatchResult"
+                type: object
+                additionalProperties: true
+                title: Response Reference Match Tenders  Source Id   Tender Id  Reference Match Post
         "422":
           description: Validation Error
           content:
@@ -525,9 +531,7 @@ paths:
   /tenders/{source_id}/{tender_id}/feedback:
     post:
       summary: Create Feedback
-      description:
-        Create or update feedback for a tender (upsert — one feedback per
-        tender).
+      description: Create or update feedback for a tender (upsert — one feedback per tender).
       operationId: create_feedback_tenders__source_id___tender_id__feedback_post
       parameters:
         - name: source_id
@@ -563,9 +567,7 @@ paths:
                 $ref: "#/components/schemas/HTTPValidationError"
     delete:
       summary: Delete Feedback
-      description:
-        Remove feedback for a tender. Idempotent — returns 204 even if
-        no record exists.
+      description: Remove feedback for a tender. Idempotent — returns 204 even if no record exists.
       operationId: delete_feedback_tenders__source_id___tender_id__feedback_delete
       parameters:
         - name: source_id
@@ -733,9 +735,7 @@ paths:
                 $ref: "#/components/schemas/HTTPValidationError"
     put:
       summary: Update Setting
-      description:
-        Full replacement of a setting. Validates body against the type-specific
-        model.
+      description: Full replacement of a setting. Validates body against the type-specific model.
       operationId: update_setting_settings__setting_type__put
       parameters:
         - name: setting_type
@@ -760,9 +760,7 @@ paths:
   /team:
     post:
       summary: Create Team Member
-      description:
-        Create a new team member with slug generation and email uniqueness
-        check.
+      description: Create a new team member with slug generation and email uniqueness check.
       operationId: create_team_member_team_post
       requestBody:
         required: true
@@ -912,9 +910,7 @@ paths:
   /team/{member_id}/cv:
     get:
       summary: Download Cv
-      description:
-        Return a presigned S3 URL for downloading the team member's CV.
-        Returns 404 if no CV uploaded.
+      description: Return a presigned S3 URL for downloading the team member's CV.
       operationId: download_cv_team__member_id__cv_get
       parameters:
         - name: member_id
@@ -929,9 +925,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CvDownloadResponse"
-        "404":
-          description: Team member not found or no CV uploaded
+                type: object
+                additionalProperties: true
+                title: Response Download Cv Team  Member Id  Cv Get
         "422":
           description: Validation Error
           content:
@@ -940,9 +936,7 @@ paths:
                 $ref: "#/components/schemas/HTTPValidationError"
     post:
       summary: Upload Cv
-      description:
-        Upload a CV (PDF/DOCX) for a team member. Stores in S3 and triggers
-        extraction.
+      description: Upload a CV (PDF/DOCX) for a team member. Stores in S3 and triggers extraction.
       operationId: upload_cv_team__member_id__cv_post
       parameters:
         - name: member_id
@@ -996,9 +990,7 @@ paths:
                 $ref: "#/components/schemas/HTTPValidationError"
     get:
       summary: List References
-      description:
-        List references with pagination, optional sector/year filters and
-        search.
+      description: List references with pagination, optional sector/year filters and search.
       operationId: list_references_references_get
       parameters:
         - name: page
@@ -1059,9 +1051,7 @@ paths:
   /references/{reference_id}:
     get:
       summary: Get Reference
-      description:
-        Get a single reference with enriched experts and document presigned
-        URLs.
+      description: Get a single reference with enriched experts and document presigned URLs.
       operationId: get_reference_references__reference_id__get
       parameters:
         - name: reference_id
@@ -1161,9 +1151,7 @@ paths:
   /references/{reference_id}/document/{filename}:
     delete:
       summary: Delete Document
-      description:
-        Delete a specific document from a reference. Re-extracts from remaining
-        context.
+      description: Delete a specific document from a reference. Re-extracts from remaining context.
       operationId: delete_document_references__reference_id__document__filename__delete
       parameters:
         - name: reference_id
@@ -1320,20 +1308,6 @@ components:
       type: object
       title: CollectorResultResponse
       description: Statistics from the collector (discovery) phase of a scrape run.
-    CvDownloadResponse:
-      properties:
-        filename:
-          type: string
-          title: Filename
-        presigned_url:
-          type: string
-          title: Presigned Url
-      type: object
-      required:
-        - filename
-        - presigned_url
-      title: CvDownloadResponse
-      description: Presigned S3 URL for downloading a team member's CV.
     DocumentInfo:
       properties:
         filename:
@@ -1457,9 +1431,7 @@ components:
             - type: integer
             - type: "null"
           title: Total Count
-          description:
-            Total items matching current filters (before pagination); null
-            when unavailable
+          description: Total items matching current filters (before pagination); null when unavailable
         page:
           type: integer
           title: Page
@@ -1726,9 +1698,7 @@ components:
           default: 0
       type: object
       title: RetrieverResultResponse
-      description:
-        Statistics from the retriever (detail-fetch) phase of a scrape
-        run.
+      description: Statistics from the retriever (detail-fetch) phase of a scrape run.
     RunDetailResponse:
       properties:
         pk:
@@ -1784,9 +1754,7 @@ components:
         - setting_type
         - updated_at
       title: SettingResponse
-      description:
-        Response model for a single setting. Extra fields allowed for varying
-        shapes.
+      description: Response model for a single setting. Extra fields allowed for varying shapes.
     SettingsListResponse:
       properties:
         items:
@@ -2144,6 +2112,11 @@ components:
             - type: number
             - type: "null"
           title: Unified Score
+        skip_reason:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Skip Reason
         pk:
           type: string
           title: Pk
@@ -2174,11 +2147,6 @@ components:
           type: integer
           title: Documents Failed
           default: 0
-        skip_reason:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Skip Reason
         discovered_run_id:
           anyOf:
             - type: string
@@ -2222,56 +2190,57 @@ components:
           title: Emailed At
         experts_required:
           anyOf:
-            - $ref: "#/components/schemas/ExpertsRequired"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Experts Required
-          description: "Legacy first-pass extraction. Use team_requirements for detailed data."
         references_required:
           anyOf:
-            - $ref: "#/components/schemas/ReferencesRequired"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: References Required
-          description: "Legacy first-pass extraction. Use reference_requirements for detailed data."
         turnover_required:
           anyOf:
-            - $ref: "#/components/schemas/TurnoverRequired"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Turnover Required
         team_requirements:
           anyOf:
-            - $ref: "#/components/schemas/TeamRequirementsExtraction"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Team Requirements
         team_match_result:
           anyOf:
-            - $ref: "#/components/schemas/TeamMatchResult"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Team Match Result
         reference_requirements:
           anyOf:
-            - $ref: "#/components/schemas/ReferenceRequirementsExtraction"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Reference Requirements
         reference_match_result:
           anyOf:
-            - $ref: "#/components/schemas/ReferenceMatchResult"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Reference Match Result
         exclusion_result:
           anyOf:
-            - $ref: "#/components/schemas/ExclusionResult"
+            - additionalProperties: true
+              type: object
             - type: "null"
           title: Exclusion Result
         feedback_type:
           anyOf:
             - type: string
-              enum:
-                - interesting
-                - boring
             - type: "null"
-          default: null
           title: Feedback Type
-          description: User feedback for interestingness calibration, if any.
       type: object
       required:
         - source_id
@@ -2283,537 +2252,6 @@ components:
         - pk
       title: TenderDetailResponse
       description: Full tender record including S3 content, warnings, and run linkage.
-    ExpertsRequired:
-      type: object
-      description: "Legacy first-pass LLM extraction of expert/staffing requirements. Shape is best-effort from LLM."
-      properties:
-        international:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Number of international experts required.
-        local:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Number of local/national experts required.
-        key_experts:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Number of key (senior) experts required.
-        total:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Total number of experts required.
-        notes:
-          anyOf:
-            - type: string
-            - type: "null"
-          description: Additional notes about staffing requirements.
-      additionalProperties: true
-      title: ExpertsRequired
-    ReferencesRequired:
-      type: object
-      description: "Legacy first-pass LLM extraction of reference/experience requirements. Shape is best-effort from LLM."
-      properties:
-        count:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Number of references required.
-        type:
-          anyOf:
-            - type: string
-            - type: "null"
-          description: Type of references (e.g. "similar projects", "same sector").
-        value_eur:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Minimum value (EUR) of required reference projects.
-        timeline_years:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: How recent references must be (years).
-        notes:
-          anyOf:
-            - type: string
-            - type: "null"
-          description: Additional notes about reference requirements.
-      additionalProperties: true
-      title: ReferencesRequired
-    TurnoverRequired:
-      type: object
-      description: "Legacy first-pass LLM extraction of financial turnover requirements. Shape is best-effort from LLM."
-      properties:
-        annual_eur:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Required annual turnover in EUR.
-        years:
-          anyOf:
-            - type: integer
-            - type: "null"
-          description: Number of years the turnover threshold must be met.
-        notes:
-          anyOf:
-            - type: string
-            - type: "null"
-          description: Additional notes about financial requirements.
-      additionalProperties: true
-      title: TurnoverRequired
-    TeamRequirement:
-      type: object
-      properties:
-        role:
-          type: string
-        specializations:
-          type: array
-          items:
-            type: string
-        mandatory:
-          type: boolean
-          default: true
-        min_years:
-          anyOf:
-            - type: integer
-            - type: "null"
-        languages:
-          type: array
-          items:
-            type: string
-        notes:
-          anyOf:
-            - type: string
-            - type: "null"
-      required:
-        - role
-      title: TeamRequirement
-    TeamRequirementsExtraction:
-      type: object
-      description: Result of LLM team requirement extraction from tender documents.
-      properties:
-        team_requirements:
-          type: array
-          items:
-            $ref: "#/components/schemas/TeamRequirement"
-        total_experts_required:
-          anyOf:
-            - type: integer
-            - type: "null"
-        extraction_confidence:
-          type: string
-          enum:
-            - high
-            - medium
-            - low
-      required:
-        - team_requirements
-        - extraction_confidence
-      title: TeamRequirementsExtraction
-    TeamRequirementsExtractionResponse:
-      type: object
-      description: Response from POST extract-team, includes extraction metadata.
-      allOf:
-        - $ref: "#/components/schemas/TeamRequirementsExtraction"
-        - type: object
-          properties:
-            extraction_source:
-              type: string
-              enum:
-                - documents
-                - description
-            documents_used:
-              type: array
-              items:
-                type: string
-          required:
-            - extraction_source
-            - documents_used
-      title: TeamRequirementsExtractionResponse
-    BestMatch:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        type:
-          type: string
-          enum:
-            - employee
-            - contractor
-        match_score:
-          type: number
-          minimum: 0
-          maximum: 1
-        duplicate_roles:
-          type: array
-          items:
-            type: string
-      required:
-        - id
-        - name
-        - type
-        - match_score
-      title: BestMatch
-    RoleMatch:
-      type: object
-      properties:
-        required_role:
-          type: string
-        mandatory:
-          type: boolean
-        best_match:
-          anyOf:
-            - $ref: "#/components/schemas/BestMatch"
-            - type: "null"
-        match_score:
-          type: number
-          minimum: 0
-          maximum: 1
-        status:
-          type: string
-          enum:
-            - matched
-            - partial
-            - gap
-      required:
-        - required_role
-        - mandatory
-        - match_score
-        - status
-      title: RoleMatch
-    GapEntry:
-      type: object
-      properties:
-        role:
-          type: string
-        mandatory:
-          type: boolean
-        severity:
-          type: string
-          enum:
-            - high
-            - low
-      required:
-        - role
-        - mandatory
-        - severity
-      title: GapEntry
-    TeamMatchResult:
-      type: object
-      description: Result of deterministic team match fitness scoring.
-      properties:
-        team_match_score:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Overall weighted score (4 decimal places).
-        role_matches:
-          type: array
-          items:
-            $ref: "#/components/schemas/RoleMatch"
-        gaps:
-          type: array
-          items:
-            $ref: "#/components/schemas/GapEntry"
-        external_experts_needed:
-          type: integer
-          description: Count of roles with status "gap".
-        message:
-          anyOf:
-            - type: string
-            - type: "null"
-      required:
-        - team_match_score
-        - role_matches
-        - gaps
-        - external_experts_needed
-      title: TeamMatchResult
-    ReferenceRequirement:
-      type: object
-      properties:
-        domain:
-          type: string
-        min_projects:
-          anyOf:
-            - type: integer
-            - type: "null"
-        min_value_eur:
-          anyOf:
-            - type: integer
-            - type: "null"
-        max_age_years:
-          anyOf:
-            - type: integer
-            - type: "null"
-        region:
-          anyOf:
-            - type: string
-            - type: "null"
-        donor_preference:
-          anyOf:
-            - type: string
-            - type: "null"
-        mandatory:
-          type: boolean
-          default: true
-        notes:
-          anyOf:
-            - type: string
-            - type: "null"
-      required:
-        - domain
-      title: ReferenceRequirement
-    ReferenceRequirementsExtraction:
-      type: object
-      description: Result of LLM reference requirement extraction from tender documents.
-      properties:
-        reference_requirements:
-          type: array
-          items:
-            $ref: "#/components/schemas/ReferenceRequirement"
-        total_references_required:
-          anyOf:
-            - type: integer
-            - type: "null"
-        extraction_confidence:
-          type: string
-          enum:
-            - high
-            - medium
-            - low
-      required:
-        - reference_requirements
-        - extraction_confidence
-      title: ReferenceRequirementsExtraction
-    ReferenceRequirementsExtractionResponse:
-      type: object
-      description: Response from POST extract-references, includes extraction metadata.
-      allOf:
-        - $ref: "#/components/schemas/ReferenceRequirementsExtraction"
-        - type: object
-          properties:
-            extraction_source:
-              type: string
-              enum:
-                - documents
-                - description
-            documents_used:
-              type: array
-              items:
-                type: string
-          required:
-            - extraction_source
-            - documents_used
-      title: ReferenceRequirementsExtractionResponse
-    ReferenceBestMatch:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        match_score:
-          type: number
-          minimum: 0
-          maximum: 1
-        match_factors:
-          type: object
-          properties:
-            domain:
-              type: number
-            budget:
-              type: number
-            recency:
-              type: number
-            region:
-              type: number
-            donor:
-              type: number
-          additionalProperties: true
-        consortium_coverage:
-          type: boolean
-          default: false
-      required:
-        - id
-        - title
-        - match_score
-        - match_factors
-      title: ReferenceBestMatch
-    RequirementMatch:
-      type: object
-      properties:
-        domain:
-          type: string
-        mandatory:
-          type: boolean
-        best_matches:
-          type: array
-          items:
-            $ref: "#/components/schemas/ReferenceBestMatch"
-        status:
-          type: string
-          enum:
-            - matched
-            - partial
-            - gap
-        coverage_count:
-          type: integer
-          description: Count of matches exceeding threshold (>0.4).
-        gap_note:
-          anyOf:
-            - type: string
-            - type: "null"
-      required:
-        - domain
-        - mandatory
-        - best_matches
-        - status
-        - coverage_count
-      title: RequirementMatch
-    ReferenceGapEntry:
-      type: object
-      properties:
-        domain:
-          type: string
-        mandatory:
-          type: boolean
-        severity:
-          type: string
-          enum:
-            - high
-            - low
-      required:
-        - domain
-        - mandatory
-        - severity
-      title: ReferenceGapEntry
-    ReferenceMatchResult:
-      type: object
-      description: Result of deterministic reference match fitness scoring.
-      properties:
-        reference_match_score:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Overall weighted score (4 decimal places).
-        requirement_matches:
-          type: array
-          items:
-            $ref: "#/components/schemas/RequirementMatch"
-        gaps:
-          type: array
-          items:
-            $ref: "#/components/schemas/ReferenceGapEntry"
-        consortium_note:
-          anyOf:
-            - type: string
-            - type: "null"
-        message:
-          anyOf:
-            - type: string
-            - type: "null"
-      required:
-        - reference_match_score
-        - requirement_matches
-        - gaps
-      title: ReferenceMatchResult
-    ExclusionCriterion:
-      type: object
-      properties:
-        criterion:
-          type: string
-        category:
-          type: string
-          enum:
-            - financial
-            - legal
-            - experience
-            - accreditation
-            - geographic
-            - consortium
-            - capacity
-        assessment:
-          type: string
-          enum:
-            - pass
-            - fail
-            - uncertain
-        confidence:
-          type: string
-          enum:
-            - high
-            - medium
-            - low
-        reason:
-          type: string
-      required:
-        - criterion
-        - category
-        - assessment
-        - confidence
-        - reason
-      title: ExclusionCriterion
-    ExclusionResult:
-      type: object
-      description: Result of exclusion criteria evaluation against company profile.
-      properties:
-        criteria:
-          type: array
-          items:
-            $ref: "#/components/schemas/ExclusionCriterion"
-        excluded:
-          type: boolean
-          description: True if any criterion has assessment=fail with high confidence.
-        exclusion_reasons:
-          type: array
-          items:
-            type: string
-          description: Criteria that triggered exclusion (fail + high confidence).
-        uncertain_flags:
-          type: array
-          items:
-            type: string
-          description: Criteria with assessment=uncertain.
-        extraction_confidence:
-          type: string
-          enum:
-            - high
-            - medium
-            - low
-      required:
-        - criteria
-        - excluded
-        - exclusion_reasons
-        - uncertain_flags
-        - extraction_confidence
-      title: ExclusionResult
-    ExclusionResultResponse:
-      type: object
-      description: Response from POST check-exclusion, includes extraction metadata.
-      allOf:
-        - $ref: "#/components/schemas/ExclusionResult"
-        - type: object
-          properties:
-            extraction_source:
-              type: string
-              enum:
-                - documents
-                - description
-            documents_used:
-              type: array
-              items:
-                type: string
-          required:
-            - extraction_source
-            - documents_used
-      title: ExclusionResultResponse
     ValidationError:
       properties:
         loc:

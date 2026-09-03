@@ -6,7 +6,7 @@ import { ApiError } from '@/api/client'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { getErrorMessage } from '@/utils/errors'
 import { validateDocument } from '@/utils/document-validation'
-import { formatDateTime } from '@/utils/formatting'
+import { formatDateTime, formatBudgetRange } from '@/utils/formatting'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -583,9 +583,10 @@ function ReferenceForm({ reference }: { reference: ReferenceResponse }) {
           const hasCountries = fields.countries && fields.countries.length > 0
           const hasType = fields.type && fields.type.trim() !== ''
           const hasDeliverables = fields.key_deliverables && fields.key_deliverables.length > 0
-          const hasBudgetRange = fields.budget_range && fields.budget_range.trim() !== ''
+          const hasBudgetRange = fields.budget_range != null && (fields.budget_range.min != null || fields.budget_range.max != null)
+          const hasYear = fields.year != null
 
-          if (!hasThemes && !hasDonor && !hasCountries && !hasType && !hasDeliverables && !hasBudgetRange) {
+          if (!hasThemes && !hasDonor && !hasCountries && !hasType && !hasDeliverables && !hasBudgetRange && !hasYear) {
             return <p className="text-sm text-muted-foreground">No extracted data available</p>
           }
 
@@ -637,7 +638,14 @@ function ReferenceForm({ reference }: { reference: ReferenceResponse }) {
               {hasBudgetRange && (
                 <div className="space-y-1">
                   <span className="text-xs font-medium text-muted-foreground">Budget Range</span>
-                  <p className="text-sm">{fields.budget_range}</p>
+                  <p className="text-sm">{formatBudgetRange(fields.budget_range!)}</p>
+                </div>
+              )}
+
+              {hasYear && (
+                <div className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Year</span>
+                  <p className="text-sm">{fields.year}</p>
                 </div>
               )}
             </div>

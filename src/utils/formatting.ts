@@ -116,6 +116,27 @@ export function formatEur(value: number): string {
 }
 
 /**
+ * Formats a tender score for display, rounded to one decimal place.
+ * e.g. 6.25 → "6.3", 7 → "7.0"
+ */
+export function formatScore(score: number): string {
+  return score.toFixed(1)
+}
+
+/**
+ * Formats an extracted budget range object as a EUR string.
+ * Handles min-only, max-only, and both. Returns "Not specified" when empty.
+ * e.g. { min: 11508, max: 17262 } → "€11,508 – €17,262"
+ */
+export function formatBudgetRange(range: { min: number | null; max: number | null }): string {
+  const { min, max } = range
+  if (min != null && max != null) return `${formatEur(min)} – ${formatEur(max)}`
+  if (min != null) return `From ${formatEur(min)}`
+  if (max != null) return `Up to ${formatEur(max)}`
+  return 'Not specified'
+}
+
+/**
  * Extracts the short model name from a potentially slash-separated path.
  * e.g. "accounts/fireworks/models/llama-v3p3-70b-instruct" → "llama-v3p3-70b-instruct"
  */

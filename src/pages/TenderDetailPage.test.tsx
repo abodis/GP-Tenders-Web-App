@@ -1,34 +1,56 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import * as fc from 'fast-check'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import TenderDetailPage from './TenderDetailPage'
 import type { TenderDetailResponse } from '@/api/types'
 
-// Feature: rfp-web-v1, Property 12: All warnings rendered
-// **Validates: Requirements 7.12**
+// Mock zone components
+vi.mock('@/components/tender-detail/header-zone', () => ({
+  HeaderZone: () => <div data-testid="header-zone" />,
+}))
+vi.mock('@/components/tender-detail/verdict-zone', () => ({
+  VerdictZone: () => <div data-testid="verdict-zone" />,
+}))
+vi.mock('@/components/tender-detail/match-fitness-tabs', () => ({
+  MatchFitnessTabs: () => <div data-testid="match-fitness-tabs" />,
+}))
+vi.mock('@/components/tender-detail/details-section', () => ({
+  DetailsSection: () => <div data-testid="details-section" />,
+}))
+vi.mock('@/components/tender-detail/developer-section', () => ({
+  DeveloperSection: () => <div data-testid="developer-section" />,
+}))
 
-vi.mock('@/hooks/useTenderDetail')
-vi.mock('@/hooks/useTenderDocuments')
-
-import { useTenderDetail } from '@/hooks/useTenderDetail'
-import { useTenderDocuments } from '@/hooks/useTenderDocuments'
-
-function buildMockTender(warnings: string[]): TenderDetailResponse {
+// Mock useParams
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
   return {
+    ...actual,
+    useParams: () => ({ sourceId: 'test-source', tenderId: 'test-tender' }),
+  }
+})
+
+// Mock useTenderDetail
+const mockUseTenderDetail = vi.fn()
+vi.mock('@/hooks/useTenderDetail', () => ({
+  useTenderDetail: (...args: unknown[]) => mockUseTenderDetail(...args),
+}))
+
+function createTender(overrides: Partial<TenderDetailResponse> = {}): TenderDetailResponse {
+  return {
+    pk: 'test#tender',
     source_id: 'test-source',
     tender_id: 'test-tender',
     title: 'Test Tender',
-    posted_date: '2024-01-01',
-    deadline: null,
-    discovered_at: '2024-01-01T00:00:00Z',
+    posted_date: '2025-01-01',
+    deadline: '2025-03-01',
+    discovered_at: '2025-01-01T00:00:00Z',
     status: 'completed',
     fully_visible: true,
-    budget: 0,
-    currency: null,
+    budget: 100000,
+    currency: 'EUR',
     status_name: null,
-    location_names: null,
+    location_names: 'Romania',
     sectors: null,
     types: null,
     documents_total: 0,
@@ -37,22 +59,21 @@ function buildMockTender(warnings: string[]): TenderDetailResponse {
     analysis_tags: [],
     tender_type: null,
     analyzed_at: null,
-    organization: null,
+    organization: 'Test Org',
     interestingness_score: null,
     unified_score: null,
-    pk: 'test-pk',
+    skip_reason: null,
     retry_count: 0,
     last_attempt: null,
     last_error: null,
     s3_prefix: null,
     documents_downloaded: 0,
     documents_failed: 0,
-    skip_reason: null,
     discovered_run_id: null,
     processed_run_id: null,
     detail: null,
-    description_text: null,
-    warnings,
+    description_text: 'A test description',
+    warnings: [],
     analysis_context: null,
     analysis_model: null,
     emailed_at: null,
@@ -66,75 +87,163 @@ function buildMockTender(warnings: string[]): TenderDetailResponse {
     exclusion_result: null,
     feedback_type: null,
     interestingness_reasoning: null,
+    ...overrides,
   }
 }
 
-function renderTenderDetail() {
+function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/tenders/test-source/test-tender']}>
-        <Routes>
-          <Route path="tenders/:sourceId/:tenderId" element={<TenderDetailPage />} />
-        </Routes>
+        <TenderDetailPageWrapper />
       </MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
-/**
- * Generate unique warning strings: alphanumeric words separated by single spaces.
- * Avoids special chars that collide with DOM content and multi-space sequences
- * that get collapsed by HTML rendering.
- */
-const warningWordArb = fc.stringMatching(/^[A-Za-z][A-Za-z0-9]{0,11}$/)
+// Lazy import to allow mocks to be set up first
+let TenderDetailPage: typeof import('./TenderDetailPage').default
 
-const warningStringArb = fc
-  .array(warningWordArb, { minLength: 1, maxLength: 6 })
-  .map((words) => words.join(' '))
+function TenderDetailPageWrapper() {
+  return <TenderDetailPage />
+}
 
-const warningsArb = fc.uniqueArray(warningStringArb, { minLength: 1, maxLength: 10 })
-
-beforeEach(() => {
-  vi.mocked(useTenderDocuments).mockReturnValue({
-    data: { items: [], count: 0, next_cursor: null },
-    isLoading: false,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
-    refreshIfExpired: vi.fn(),
-    fetchTimestamp: { current: 0 },
-  } as unknown as ReturnType<typeof useTenderDocuments>)
+beforeEach(async () => {
+  vi.clearAllMocks()
+  const mod = await import('./TenderDetailPage')
+  TenderDetailPage = mod.default
 })
 
-describe('TenderDetailPage property tests', () => {
-  // Feature: rfp-web-v1, Property 12: All warnings rendered
-  // **Validates: Requirements 7.12**
-  it('Property 12: every warning string appears in the rendered output', () => {
-    fc.assert(
-      fc.property(warningsArb, (warnings) => {
-        const tender = buildMockTender(warnings)
+describe('TenderDetailPage composition', () => {
+  // **Validates: Requirements 9.1**
+  it('unanalyzed state renders header-zone and details-section only', () => {
+    const tender = createTender()
+    mockUseTenderDetail.mockReturnValue({
+      data: tender,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
 
-        vi.mocked(useTenderDetail).mockReturnValue({
-          data: tender,
-          isLoading: false,
-          isError: false,
-          error: null,
-          refetch: vi.fn(),
-        } as unknown as ReturnType<typeof useTenderDetail>)
+    renderPage()
 
-        const { unmount } = renderTenderDetail()
+    expect(screen.getByTestId('header-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('details-section')).toBeInTheDocument()
+    expect(screen.queryByTestId('verdict-zone')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('match-fitness-tabs')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('developer-section')).not.toBeInTheDocument()
+  })
 
-        for (const warning of warnings) {
-          const matches = screen.getAllByText(warning)
-          expect(matches.length).toBeGreaterThanOrEqual(1)
-        }
+  // **Validates: Requirements 9.2**
+  it('legacy_analyzed state renders all zones', () => {
+    const tender = createTender({
+      experts_required: { international: 2, local: 3, key_experts: 1, total: 5, notes: 'notes' },
+      unified_score: 6.5,
+      analysis_summary: 'A summary',
+      analyzed_at: '2025-01-15T00:00:00Z',
+    })
+    mockUseTenderDetail.mockReturnValue({
+      data: tender,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
 
-        unmount()
-      }),
-      { numRuns: 100 },
-    )
+    renderPage()
+
+    expect(screen.getByTestId('header-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('verdict-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('match-fitness-tabs')).toBeInTheDocument()
+    expect(screen.getByTestId('details-section')).toBeInTheDocument()
+    expect(screen.getByTestId('developer-section')).toBeInTheDocument()
+  })
+
+  // **Validates: Requirements 9.3**
+  it('fully_analyzed state renders all zones', () => {
+    const tender = createTender({
+      team_requirements: {
+        team_requirements: [],
+        total_experts_required: 3,
+        extraction_confidence: 'high',
+      },
+      unified_score: 8.0,
+      analysis_context: 'Context text',
+      analyzed_at: '2025-01-20T00:00:00Z',
+    })
+    mockUseTenderDetail.mockReturnValue({
+      data: tender,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderPage()
+
+    expect(screen.getByTestId('header-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('verdict-zone')).toBeInTheDocument()
+    expect(screen.getByTestId('match-fitness-tabs')).toBeInTheDocument()
+    expect(screen.getByTestId('details-section')).toBeInTheDocument()
+    expect(screen.getByTestId('developer-section')).toBeInTheDocument()
+  })
+
+  // **Validates: Requirements 9.4**
+  it('skipped state triggers redirect and renders no zones', () => {
+    const tender = createTender({ skip_reason: 'Budget too low' })
+    mockUseTenderDetail.mockReturnValue({
+      data: tender,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderPage()
+
+    expect(screen.queryByTestId('header-zone')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('verdict-zone')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('match-fitness-tabs')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('details-section')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('developer-section')).not.toBeInTheDocument()
+  })
+
+  // **Validates: Requirements 9.5**
+  it('renders warnings banner when warnings array is non-empty', () => {
+    const tender = createTender({
+      warnings: ['Deadline passed', 'Budget unclear'],
+    })
+    mockUseTenderDetail.mockReturnValue({
+      data: tender,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderPage()
+
+    expect(screen.getByText('Warnings')).toBeInTheDocument()
+    expect(screen.getByText('Deadline passed')).toBeInTheDocument()
+    expect(screen.getByText('Budget unclear')).toBeInTheDocument()
+  })
+
+  it('does not render warnings banner when warnings array is empty', () => {
+    const tender = createTender({ warnings: [] })
+    mockUseTenderDetail.mockReturnValue({
+      data: tender,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderPage()
+
+    expect(screen.queryByText('Warnings')).not.toBeInTheDocument()
   })
 })

@@ -63,3 +63,7 @@ it('should sort runs by date descending after merge', () => {
 - Test files live next to source: `component.tsx` → `component.test.tsx`
 - Utility tests: `src/utils/formatting.test.ts`
 - API tests: `src/api/client.test.ts`
+
+## Playwright MCP (Browser Automation)
+
+- **Always call `browser_navigate` first.** The browser launches lazily. Before navigation there is no registered page, so `browser_wait_for`, `browser_snapshot`, `browser_console_messages`, etc. fail with "No open pages available" — even though a blank browser window is visibly open on screen. This is expected, not a crash. Navigate, then interact.

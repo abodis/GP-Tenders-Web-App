@@ -60,6 +60,7 @@ const tenderListItemArb = fc
       organization: null,
       interestingness_score: null,
       unified_score: null,
+      skip_reason: null,
     }),
   )
 

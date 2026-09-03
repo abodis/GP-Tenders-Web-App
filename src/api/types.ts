@@ -40,6 +40,7 @@ export interface TenderListItem {
   organization: string | null
   interestingness_score: number | null
   unified_score: number | null
+  skip_reason: string | null
 }
 
 export interface TenderDetailResponse extends TenderListItem {
@@ -477,7 +478,9 @@ export interface ExtractedFields {
   countries?: string[]
   type?: string
   key_deliverables?: string[]
-  budget_range?: string
+  /** API returns an object with EUR min/max, not a string. Nullable. */
+  budget_range?: { min: number | null; max: number | null } | null
+  year?: number | null
 }
 
 export interface ReferenceListItem {

@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { StatusBadge } from '@/components/StatusBadge'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function RunsListPage() {
   const [sourceFilter, setSourceFilter] = useState<string | null>(null)
@@ -29,13 +30,10 @@ export default function RunsListPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Runs</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Monitor nightly scraper runs, track collection and retrieval results.
-          </p>
-        </div>
+      <PageHeader
+        title="Runs"
+        description="Monitor nightly scraper runs, track collection and retrieval results."
+      >
         <select
           value={sourceFilter ?? ''}
           onChange={(e) => setSourceFilter(e.target.value || null)}
@@ -48,7 +46,7 @@ export default function RunsListPage() {
             </option>
           ))}
         </select>
-      </div>
+      </PageHeader>
 
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">

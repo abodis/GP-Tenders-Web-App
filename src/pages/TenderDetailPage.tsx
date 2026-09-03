@@ -1,25 +1,15 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { useTenderDetail } from '@/hooks/useTenderDetail'
 import { ApiError } from '@/api/client'
 import { getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
-import { HeaderSection } from '@/components/tender-detail/header-section'
-import { AiAssessmentSection } from '@/components/tender-detail/ai-assessment-section'
-import { KeyFactsSection } from '@/components/tender-detail/key-facts-section'
-import { EligibilitySection } from '@/components/tender-detail/eligibility-section'
-import { DescriptionSection } from '@/components/tender-detail/description-section'
-import { DocumentsSection } from '@/components/tender-detail/documents-section'
-import { SystemInfoSection } from '@/components/tender-detail/system-info-section'
-import { ExclusionBanner } from '@/components/tender-detail/exclusion-banner'
-import { FeedbackButtons } from '@/components/tender-detail/feedback-buttons'
-import { ScoreBreakdownSection } from '@/components/tender-detail/score-breakdown-section'
-import { TeamRequirementsSection } from '@/components/tender-detail/team-requirements-section'
-import { TeamMatchSection } from '@/components/tender-detail/team-match-section'
-import { ReferenceRequirementsSection } from '@/components/tender-detail/reference-requirements-section'
-import { ReferenceMatchSection } from '@/components/tender-detail/reference-match-section'
-import { ExclusionCriteriaSection } from '@/components/tender-detail/exclusion-criteria-section'
-import { AuditTrailSection } from '@/components/tender-detail/audit-trail-section'
+import { classifyTenderState } from '@/utils/tender-state'
+import { HeaderZone } from '@/components/tender-detail/header-zone'
+import { VerdictZone } from '@/components/tender-detail/verdict-zone'
+import { MatchFitnessTabs } from '@/components/tender-detail/match-fitness-tabs'
+import { DetailsSection } from '@/components/tender-detail/details-section'
+import { DeveloperSection } from '@/components/tender-detail/developer-section'
 
 export default function TenderDetailPage() {
   const { sourceId, tenderId } = useParams<{ sourceId: string; tenderId: string }>()
@@ -58,9 +48,37 @@ export default function TenderDetailPage() {
 
   if (!tender) return null
 
+  const state = classifyTenderState(tender)
+
+  // Redirect skipped tenders before rendering any content
+  if (state === 'skipped') {
+    return <Navigate to="/tenders" replace />
+  }
+
+  // Determine section visibility based on state and data prerequisites
+  const isAnalyzed = state === 'legacy_analyzed' || state === 'fully_analyzed'
+
+  const showVerdict = isAnalyzed && (
+    tender.unified_score != null ||
+    tender.analysis_context != null ||
+    tender.analysis_summary != null ||
+    tender.interestingness_reasoning != null
+  )
+
+  const showMatchTabs = isAnalyzed && (
+    tender.team_requirements != null ||
+    tender.reference_requirements != null ||
+    tender.exclusion_result != null ||
+    tender.experts_required != null ||
+    tender.references_required != null ||
+    tender.turnover_required != null
+  )
+
+  const showDeveloper = isAnalyzed
+
   return (
     <div className="space-y-8">
-      {/* Warnings */}
+      {/* Warnings banner above header */}
       {tender.warnings.length > 0 && (
         <div className="rounded-lg border border-yellow-400/50 bg-yellow-50 p-4">
           <h3 className="mb-1 text-sm font-semibold text-yellow-800">Warnings</h3>
@@ -72,23 +90,24 @@ export default function TenderDetailPage() {
         </div>
       )}
 
-      <ExclusionBanner exclusionResult={tender.exclusion_result} />
+      <HeaderZone tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
 
-      <HeaderSection tender={tender} />
-      <AiAssessmentSection tender={tender} />
-      <FeedbackButtons sourceId={sourceId!} tenderId={tenderId!} feedbackType={tender.feedback_type} />
-      <KeyFactsSection tender={tender} />
-      <ScoreBreakdownSection tender={tender} />
-      <TeamRequirementsSection tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
-      <TeamMatchSection tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
-      <ReferenceRequirementsSection tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
-      <ReferenceMatchSection tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
-      <ExclusionCriteriaSection tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
-      <EligibilitySection tender={tender} />
-      <DescriptionSection descriptionText={tender.description_text} />
-      <DocumentsSection sourceId={sourceId!} tenderId={tenderId!} />
-      <AuditTrailSection sourceId={sourceId!} tenderId={tenderId!} />
-      <SystemInfoSection tender={tender} />
+      {showVerdict && <VerdictZone tender={tender} />}
+
+      {showMatchTabs && (
+        <MatchFitnessTabs
+          tender={tender}
+          state={state as 'legacy_analyzed' | 'fully_analyzed'}
+          sourceId={sourceId!}
+          tenderId={tenderId!}
+        />
+      )}
+
+      <DetailsSection tender={tender} state={state} sourceId={sourceId!} tenderId={tenderId!} />
+
+      {showDeveloper && (
+        <DeveloperSection tender={tender} sourceId={sourceId!} tenderId={tenderId!} />
+      )}
     </div>
   )
 }

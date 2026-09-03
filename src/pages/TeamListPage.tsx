@@ -5,6 +5,7 @@ import { getErrorMessage } from '@/utils/errors'
 import { ApiError } from '@/api/client'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
+import { PageHeader } from '@/components/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -264,15 +265,12 @@ export default function TeamListPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Team</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage your team roster — employees and contractors.
-          </p>
-        </div>
+      <PageHeader
+        title="Team"
+        description="Manage your team roster — employees and contractors."
+      >
         <CreateMemberDialog />
-      </div>
+      </PageHeader>
 
       {/* Search and filters */}
       <div className="flex flex-wrap items-end gap-3">

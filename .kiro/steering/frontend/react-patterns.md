@@ -83,7 +83,11 @@ export function useTenderDetail(sourceId: string, tenderId: string) {
   - Use sentinel values like `'__all__'` for "no filter" since base-ui doesn't support empty string values
   - Set `min-w-[Npx]` on `<SelectTrigger>` to prevent narrow collapsed triggers
   - `<SelectContent>` popup uses `min-w-(--anchor-width)` so it can grow wider than the trigger
+  - Select dropdown styling: default item padding was too tight. Project standard is `py-2 pl-2.5` on items, `p-1` on the popup container, and `rounded-md` on the popup (not `rounded-lg`). Already applied in `src/components/ui/select.tsx`.
   - Example: `<Select value={v} onValueChange={fn} items={[{ value: '__all__', label: 'All' }, ...]}>`
+- Popover + native date input gotcha: A native `<input type="date">` inside a base-ui `Popover` closes the popover when the user clicks the OS calendar's month arrows — the native calendar renders in an OS-level layer outside the popover DOM, so base-ui fires `outside-press`/`focus-out`. Fix: control the popover (`open`/`onOpenChange`) and call `details.cancel()` on those reasons while `document.activeElement` is a `type="date"` input inside `[data-slot="popover-content"]`. Escape and genuine outside clicks still close it. See the Period popover in `TenderListPage.tsx`.
+- Filter popover draft/Apply pattern: For popover filters that combine presets with free-form input (e.g. the Period date range in `TenderListPage.tsx`), hold a local draft (`useState`) seeded from the active filters when the popover opens. Presets and inputs write only to the draft; an explicit Apply button commits draft → URL filters and closes, and Clear empties the draft (Apply still required to commit). Avoid live `updateFilters` on every input change — partial ranges shouldn't filter the table mid-selection.
+- base-ui Select "no preset match" display: To show a computed label like "Custom range" when the selected value matches no listed option, include it as a value in the Select `items` array (so `<SelectValue>` renders its label) but do NOT render it as a `<SelectItem>` (so it's display-only, not user-selectable).
 
 ## Verification
 

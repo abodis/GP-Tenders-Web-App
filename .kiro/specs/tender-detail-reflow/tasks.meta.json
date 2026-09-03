@@ -1,0 +1,393 @@
+{
+  "pbtResults": {
+    "1.3 Write property tests for `classifyTenderState` (Properties 1 and 2)": {
+      "status": "passed",
+      "lastRunTimestamp": 1785169417093
+    },
+    "1.4 Write property tests for `getScoreBadgeColor` and `getFactorBarColor` (Properties 3 and 4)": {
+      "status": "passed",
+      "lastRunTimestamp": 1785169433199
+    },
+    "1.5 Write property test for `humanizeTenderType` (Property 5)": {
+      "status": "passed",
+      "lastRunTimestamp": 1785169451585
+    }
+  },
+  "executionHistory": {
+    "1.1 Create `src/utils/tender-state.ts` with `classifyTenderState`, `getScoreBadgeColor`, and `getFactorBarColor` functions": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218753
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169229977
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169318992
+      }
+    ],
+    "1.2 Add `humanizeTenderType` to `src/utils/format.ts`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218781
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169230913
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169319896
+      }
+    ],
+    "1.3 Write property tests for `classifyTenderState` (Properties 1 and 2)": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218837
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169324913
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169466800
+      }
+    ],
+    "1.4 Write property tests for `getScoreBadgeColor` and `getFactorBarColor` (Properties 3 and 4)": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218867
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169325936
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169467722
+      }
+    ],
+    "1.5 Write property test for `humanizeTenderType` (Property 5)": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218901
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169326796
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169468633
+      }
+    ],
+    "2.1 Create `src/components/tender-detail/score-badge.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218935
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169327646
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169469585
+      }
+    ],
+    "2.2 Create `src/components/tender-detail/factor-bar.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169218970
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169328565
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169470385
+      }
+    ],
+    "2.3 Create `src/components/tender-detail/actions-dropdown.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219006
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169488115
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169620750
+      }
+    ],
+    "3. Checkpoint": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219045
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170240024
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170346947
+      }
+    ],
+    "4.1 Create `src/components/tender-detail/header-zone.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219088
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169488805
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169621560
+      }
+    ],
+    "4.2 Create `src/components/tender-detail/verdict-zone.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219116
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169489676
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169622442
+      }
+    ],
+    "4.3 Create `src/components/tender-detail/match-fitness-tabs.tsx` and tab sub-components": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219155
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169628717
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169922168
+      }
+    ],
+    "4.4 Create `src/components/tender-detail/details-section.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219196
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169629502
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169923058
+      }
+    ],
+    "4.5 Create `src/components/tender-detail/developer-section.tsx`": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219246
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169631199
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169924067
+      }
+    ],
+    "5. Checkpoint": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219294
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170351761
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170387252
+      }
+    ],
+    "6.1 Rewrite `src/pages/TenderDetailPage.tsx` with state-based composition": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219360
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169935067
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170088707
+      }
+    ],
+    "6.2 Add skipped tender handling to the List_Page": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219394
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169935914
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170089381
+      }
+    ],
+    "6.3 Write unit tests for page composition": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219424
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170094664
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170228556
+      }
+    ],
+    "7.1 Delete replaced component files and update imports": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219457
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170095449
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170229388
+      }
+    ],
+    "8. Final checkpoint": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169219490
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170392182
+      },
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170481293
+      }
+    ],
+    "1. Create pure utility functions and state classification": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169468677
+      }
+    ],
+    "2. Implement presentational building blocks": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169620808
+      }
+    ],
+    "4. Implement zone components": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785169924108
+      }
+    ],
+    "6. Compose the page and wire state routing": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170228619
+      }
+    ],
+    "7. Remove old components": [
+      {
+        "executionId": "46eff98a-de46-40b7-9bb1-ef9d4e462132",
+        "chatSessionId": "sess_43e5344d-da7e-48e2-bd74-b2b9658e6a1d",
+        "timestamp": 1785170229427
+      }
+    ]
+  }
+}

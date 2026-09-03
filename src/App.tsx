@@ -12,31 +12,34 @@ import TeamDetailPage from '@/pages/TeamDetailPage'
 import ReferenceListPage from '@/pages/ReferenceListPage'
 import ReferenceDetailPage from '@/pages/ReferenceDetailPage'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 const queryClient = new QueryClient()
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ErrorBoundary>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route index element={<Navigate to="/tenders" replace />} />
-              <Route path="tenders" element={<TenderListPage />} />
-              <Route path="tenders/:sourceId/:tenderId" element={<TenderDetailPage />} />
-              <Route path="runs" element={<RunsListPage />} />
-              <Route path="runs/:sourceId/:runDate" element={<RunDetailPage />} />
-              <Route path="team" element={<TeamListPage />} />
-              <Route path="team/:id" element={<TeamDetailPage />} />
-              <Route path="references" element={<ReferenceListPage />} />
-              <Route path="references/:id" element={<ReferenceDetailPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
-          </Routes>
-        </ErrorBoundary>
-      </BrowserRouter>
+      <TooltipProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ErrorBoundary>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route index element={<Navigate to="/tenders" replace />} />
+                <Route path="tenders" element={<TenderListPage />} />
+                <Route path="tenders/:sourceId/:tenderId" element={<TenderDetailPage />} />
+                <Route path="runs" element={<RunsListPage />} />
+                <Route path="runs/:sourceId/:runDate" element={<RunDetailPage />} />
+                <Route path="team" element={<TeamListPage />} />
+                <Route path="team/:id" element={<TeamDetailPage />} />
+                <Route path="references" element={<ReferenceListPage />} />
+                <Route path="references/:id" element={<ReferenceDetailPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   )
 }

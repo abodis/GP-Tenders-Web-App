@@ -2,118 +2,117 @@
 
 ## Introduction
 
-Redesign the tender detail page (`TenderDetailPage.tsx`) to reorganize information from the perspective of a Green Partners employee evaluating tenders for bid/no-bid decisions. The current layout is flat and gives scraper/system metadata too much prominence. The new layout uses a three-tier information hierarchy: "Should I keep reading?" → "Can we bid?" → "System details", matching the company profile's UX priorities.
+Reorganize the tender detail page (`TenderDetailPage.tsx`) from a flat vertical layout of 12+ equally-weighted sections into a three-tier information hierarchy:
+1. **"Should I keep reading?"** — Title, organization, prominent relevance score, key facts, AI assessment
+2. **"Can we bid?"** — Eligibility requirements (consolidated, notes-primary), description, documents
+3. **"System details"** — Scraper metadata, run links, analysis fields (collapsed by default)
+
+This is a presentational restructure only. No new API calls or routes are introduced. Existing hooks (`useTenderDetail`, `useTenderDocuments`) are unchanged.
 
 ## Glossary
 
-- **Detail_Page**: The `TenderDetailPage` component that renders a single tender's full information at route `/tenders/:sourceId/:tenderId`
-- **Header_Section**: The topmost area of the Detail_Page containing the tender title, organization, relevance score, status badge, and de-emphasized identifiers
-- **Key_Facts_Grid**: A card/grid layout displaying budget, deadline, location, tender type, posted date, sectors, types, and tags
-- **AI_Assessment_Section**: The section displaying the AI-generated context (fit analysis for Green Partners) and summary
-- **Eligibility_Section**: A consolidated section grouping experts required, references required, and turnover required into sub-groups
-- **Description_Section**: The collapsible section showing the tender's full description text
-- **Documents_Section**: The table listing downloadable tender documents
-- **System_Info_Section**: A collapsible section (collapsed by default) containing scraper metadata, run links, and analysis system fields
-- **Relevance_Score_Visual**: A prominent, large colored visual element displaying the relevance score in the header area
-- **Collapse_Toggle**: A clickable control that expands or collapses a content section
+- **Detail_Page**: The `TenderDetailPage` component at route `/tenders/:sourceId/:tenderId`
+- **Header_Section**: Top area displaying title, organization, relevance score visual, and status badge
+- **Key_Facts_Grid**: Grid of primary tender metadata (deadline, location, budget, etc.)
+- **AI_Assessment_Section**: Section showing analysis context and summary from the LLM
+- **Eligibility_Section**: Consolidated section for experts, references, and turnover requirements
+- **Description_Section**: Collapsible section showing the tender's raw description text
+- **Documents_Section**: Table of downloadable tender documents
+- **System_Info_Section**: Collapsible section showing scraper metadata and run links
+- **RelevanceScoreVisual**: A large, prominent score display replacing the small `ScoreBadge` in the header
 
 ## Requirements
 
-### Requirement 1: Header Section Layout
+### Requirement 1: Header Section with Prominent Score
 
-**User Story:** As a Green Partners employee, I want to see the tender title, organization, relevance score, and status at the top of the page, so that I can immediately assess whether this tender is worth evaluating further.
+**User Story:** As a Green Partners employee, I want to see the tender title, organization, and relevance score prominently at the top, so that I can immediately gauge whether this tender is worth evaluating.
 
 #### Acceptance Criteria
 
-1. THE Detail_Page SHALL display the tender title as the primary heading in the Header_Section
+1. THE Header_Section SHALL display the tender title as the primary `h1` heading
 2. THE Header_Section SHALL display the organization name directly below or beside the title
-3. THE Header_Section SHALL display the Relevance_Score_Visual as a large colored element using green for scores 7–10, yellow for scores 4–6, red for scores 1–3, and gray for null or zero
-4. THE Header_Section SHALL display the status_name as a human-readable badge (e.g. "Active", "Closed") when status_name is available
-5. THE Header_Section SHALL display the source_id and tender_id in a de-emphasized style (smaller text, muted color)
-6. WHEN warnings exist on the tender, THE Detail_Page SHALL display a warnings banner above the Header_Section
+3. THE Header_Section SHALL display a large colored RelevanceScoreVisual showing the `relevance_score` value with color coding: green for 7–10, yellow for 4–6, red for 1–3, gray for null or 0
+4. THE Header_Section SHALL display the `StatusBadge` with `status_name` when available
+5. THE Header_Section SHALL de-emphasize source_id and tender_id (smaller text, muted color)
 
 ### Requirement 2: Key Facts Grid
 
-**User Story:** As a Green Partners employee, I want to see budget, deadline, location, and other key facts in a scannable grid, so that I can quickly assess the tender's basic parameters.
+**User Story:** As a Green Partners employee, I want key facts organized in a scannable grid below the header, so that I can see deadline, budget, and location without reading through paragraphs.
 
 #### Acceptance Criteria
 
-1. THE Detail_Page SHALL display a Key_Facts_Grid immediately below the Header_Section
-2. THE Key_Facts_Grid SHALL display: Budget, Deadline, Location, Tender Type, Posted Date, Sectors, Types, and Tags
-3. THE Key_Facts_Grid SHALL format the budget as EUR currency using the existing `formatBudget` utility
-4. WHEN a field value is null or empty, THE Key_Facts_Grid SHALL display a dash ("—") placeholder
-5. THE Key_Facts_Grid SHALL display tags as pill-shaped badges when analysis_tags are present
+1. THE Key_Facts_Grid SHALL render immediately below the Header_Section
+2. THE Key_Facts_Grid SHALL display: deadline, location, budget (formatted with EUR currency), tender_type (humanized), source link
+3. THE Key_Facts_Grid SHALL display tags as subtle pill badges when `analysis_tags` is non-empty
+4. WHEN a field value is null, THE Key_Facts_Grid SHALL display "—" as a placeholder
 
 ### Requirement 3: AI Assessment Section
 
-**User Story:** As a Green Partners employee, I want to see the AI's fit analysis for Green Partners before the general summary, so that I can quickly understand how relevant this tender is to our capabilities.
+**User Story:** As a Green Partners employee, I want the AI's assessment displayed before eligibility details, so that I get the machine's verdict before diving into specifics.
 
 #### Acceptance Criteria
 
-1. THE Detail_Page SHALL display the AI_Assessment_Section below the Key_Facts_Grid
-2. THE AI_Assessment_Section SHALL display the analysis_context (fit analysis) before the analysis_summary
-3. THE AI_Assessment_Section SHALL display the analysis_model and analyzed_at as tooltips or subtle inline metadata near the section heading
-4. WHEN analysis_context is null, THE AI_Assessment_Section SHALL omit the context block
-5. WHEN analysis_summary is null, THE AI_Assessment_Section SHALL omit the summary block
-6. WHEN both analysis_context and analysis_summary are null, THE Detail_Page SHALL omit the AI_Assessment_Section entirely
+1. THE AI_Assessment_Section SHALL render after Key_Facts_Grid and before the Eligibility_Section
+2. THE AI_Assessment_Section SHALL display `analysis_context` (fit analysis) as primary content
+3. THE AI_Assessment_Section SHALL display `analysis_summary` below the fit analysis
+4. WHEN `analysis_context` is null, THE AI_Assessment_Section SHALL display only `analysis_summary`
+5. WHEN both `analysis_context` and `analysis_summary` are null, THE AI_Assessment_Section SHALL NOT render
 
-### Requirement 4: Eligibility Requirements Section
+### Requirement 4: Eligibility Section with Notes-Primary Pattern
 
-**User Story:** As a Green Partners employee, I want to see all eligibility requirements (experts, references, turnover) in one consolidated section with notes prominently displayed and numeric details available on hover, so that I can quickly assess whether we qualify to bid without visual clutter.
-
-#### Acceptance Criteria
-
-1. THE Detail_Page SHALL display the Eligibility_Section below the AI_Assessment_Section
-2. THE Eligibility_Section SHALL group experts_required, references_required, and turnover_required as labeled sub-groups within a single section
-3. EACH sub-group SHALL display the notes field as the primary visible content, since notes contain the human-readable requirement description
-4. EACH sub-group SHALL display the structured numeric data (e.g. international, local, key_experts, total, count, type, value_eur, timeline_years, annual_eur, years) behind an info icon that reveals the data on hover via a tooltip or popover
-5. WHEN a sub-group has no notes value, THE sub-group SHALL fall back to displaying the structured numeric data inline instead
-6. WHEN experts_required is null, THE Eligibility_Section SHALL omit the experts sub-group
-7. WHEN references_required is null, THE Eligibility_Section SHALL omit the references sub-group
-8. WHEN turnover_required is null, THE Eligibility_Section SHALL omit the turnover sub-group
-9. WHEN all three requirement fields are null, THE Detail_Page SHALL omit the Eligibility_Section entirely
-10. THE Eligibility_Section SHALL format monetary values (value_eur, annual_eur) as EUR currency in both the tooltip and any inline fallback display
-
-### Requirement 5: Collapsible Description
-
-**User Story:** As a Green Partners employee, I want the description to show a short preview with an option to expand, so that long descriptions do not dominate the page when I am scanning.
+**User Story:** As a Green Partners employee, I want eligibility requirements (experts, references, turnover) consolidated in one section with human-readable notes as the primary content, so that I can quickly assess bid eligibility.
 
 #### Acceptance Criteria
 
-1. THE Description_Section SHALL display the first 4–6 lines of description_text as a visible preview
-2. THE Description_Section SHALL display a Collapse_Toggle labeled "Show full description" below the preview when the description exceeds the preview length
-3. WHEN the user activates the Collapse_Toggle, THE Description_Section SHALL expand to show the full description_text
-4. WHEN the description is expanded, THE Collapse_Toggle SHALL change its label to "Show less"
-5. WHEN description_text is null, THE Detail_Page SHALL omit the Description_Section entirely
+1. THE Eligibility_Section SHALL consolidate experts_required, references_required, and turnover_required into sub-groups within a single section
+2. THE Eligibility_Section SHALL be rendered after the AI_Assessment_Section
+3. WHEN a sub-group's `notes` field is present, THE Eligibility_Section SHALL display notes as the primary visible content with structured numeric data available via an info tooltip
+4. WHEN a sub-group's `notes` field is null, THE Eligibility_Section SHALL display the structured numeric data inline as fallback
+5. THE Eligibility_Section SHALL format monetary values (`value_eur`, `annual_eur`) in EUR currency format
+6. WHEN a sub-group's corresponding field is entirely null, THE Eligibility_Section SHALL omit that sub-group
+7. WHEN all three requirement fields are null, THE Eligibility_Section SHALL NOT render
 
-### Requirement 6: Documents Table
+### Requirement 5: Collapsible Description Section
 
-**User Story:** As a Green Partners employee, I want to see and download tender documents, so that I can review the full tender package.
+**User Story:** As a Green Partners employee, I want the raw tender description collapsed by default when AI assessment exists, so that boilerplate text doesn't push important content below the fold.
 
 #### Acceptance Criteria
 
-1. THE Detail_Page SHALL display the Documents_Section below the Description_Section
-2. THE Documents_Section SHALL display documents in a table with columns: Filename, Size, Download
+1. THE Description_Section SHALL display a preview of 4–6 lines by default with a "Show full description" toggle
+2. WHEN the user activates "Show full description", THE Description_Section SHALL expand to show the complete `description_text`
+3. WHEN expanded, THE Description_Section SHALL display a "Show less" toggle to collapse back to preview
+4. THE Description_Section SHALL preserve formatting and line breaks from the source text
+5. WHEN `description_text` is null, THE Description_Section SHALL NOT render
+
+### Requirement 6: Documents Section
+
+**User Story:** As a Green Partners employee, I want to see and download tender documents in a clear list, so that I can access the full tender package.
+
+#### Acceptance Criteria
+
+1. THE Documents_Section SHALL display documents in a table/list with filename, size (formatted as KB/MB), and a download link
+2. THE Documents_Section SHALL display each document's presigned URL as the download action
 3. WHEN no documents are available, THE Documents_Section SHALL display "No documents available"
-4. WHEN the documents API is loading, THE Documents_Section SHALL display a loading spinner
-5. IF the documents API returns an error, THEN THE Documents_Section SHALL display an error message with a retry button
+4. WHILE documents are loading, THE Documents_Section SHALL display a loading spinner
+5. IF the documents API returns an error, THE Documents_Section SHALL display an error message with a retry option
 
-### Requirement 7: Collapsible System Info
+### Requirement 7: Collapsible System Info Section
 
-**User Story:** As a Green Partners employee, I want scraper and system metadata hidden by default but accessible when needed, so that technical details do not clutter my evaluation workflow.
+**User Story:** As a developer, I want system metadata accessible but hidden by default, so that ops details don't clutter the primary evaluation view.
 
 #### Acceptance Criteria
 
-1. THE Detail_Page SHALL display the System_Info_Section as the last section on the page
-2. THE System_Info_Section SHALL be collapsed by default
-3. THE System_Info_Section SHALL contain: scraper status, retry_count, last_attempt, last_error, documents_downloaded, documents_failed, skip_reason, discovery run link, processing run link, analysis_model, analyzed_at, emailed_at, source_id, and tender_id
-4. WHEN the user activates the System_Info_Section Collapse_Toggle, THE System_Info_Section SHALL expand to reveal all system metadata fields
-5. WHEN a system metadata field value is null, THE System_Info_Section SHALL display a dash ("—") placeholder
+1. THE System_Info_Section SHALL render collapsed by default
+2. THE System_Info_Section SHALL be rendered at the bottom of the page, after the Documents_Section
+3. WHEN expanded, THE System_Info_Section SHALL display: scraper status, retry_count, last_attempt, last_error, documents_downloaded, documents_failed, skip_reason, discovery run ID (linked), processing run ID (linked), analysis_model, analyzed_at, emailed_at, source_id, tender_id
+4. THE System_Info_Section SHALL contain a toggle to expand/collapse
+5. WHEN a metadata field is null, THE System_Info_Section SHALL display "—" as a placeholder
 
 ### Requirement 8: Section Ordering
 
-**User Story:** As a Green Partners employee, I want information ordered by decision-making priority, so that the most important evaluation data appears first.
+**User Story:** As a Green Partners employee, I want the page sections ordered by decision-relevance, so that I can evaluate tenders top-to-bottom without jumping around.
 
 #### Acceptance Criteria
 
-1. THE Detail_Page SHALL render sections in this order: Warnings (if any), Header_Section, Key_Facts_Grid, AI_Assessment_Section, Eligibility_Section, Description_Section, Documents_Section, System_Info_Section
+1. THE Detail_Page SHALL render sections in this order: Header_Section → Key_Facts_Grid → AI_Assessment_Section → Eligibility_Section → Description_Section → Documents_Section → System_Info_Section
+2. WHEN warnings exist on the tender, THE Detail_Page SHALL display a warnings banner above the Header_Section

@@ -5,6 +5,7 @@ import { getErrorMessage } from '@/utils/errors'
 import { ApiError } from '@/api/client'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
+import { PageHeader } from '@/components/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -290,15 +291,12 @@ export default function ReferenceListPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">References</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage your portfolio of past project references.
-          </p>
-        </div>
+      <PageHeader
+        title="References"
+        description="Manage your portfolio of past project references."
+      >
         <CreateReferenceDialog />
-      </div>
+      </PageHeader>
 
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-3">

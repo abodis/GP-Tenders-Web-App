@@ -4,6 +4,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { InfoTooltip } from '@/components/InfoTooltip'
 import { MarkdownPreview } from '@/components/MarkdownPreview'
+import { PageHeader } from '@/components/PageHeader'
 import { getErrorMessage } from '@/utils/errors'
 import { formatDateTime } from '@/utils/formatting'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -787,12 +788,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Configure scraper filters, analysis pipeline, interestingness scoring, company profile, email delivery, and digest.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Configure scraper filters, analysis pipeline, interestingness scoring, company profile, email delivery, and digest."
+      />
 
       {data?.selectionCriteria && (
         <SelectionCriteriaSection data={data.selectionCriteria} />
