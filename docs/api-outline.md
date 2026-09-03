@@ -215,6 +215,8 @@ interface TenderDetailResponse extends TenderListItem {
   turnover_required: object | null;    // {annual_eur, years, notes}
   team_requirements: object | null;    // extracted team roles (see POST extract-team)
   team_match_result: object | null;   // team match fitness scoring result (see POST team-match)
+  // User feedback
+  feedback_type: "interesting" | "boring" | null;  // current feedback state from tender_feedback table
 }
 ```
 
@@ -353,6 +355,40 @@ Single document presigned URL: `{"filename": "...", "url": "..."}`.
 
 ---
 
+### POST /tenders/{source_id}/{tender_id}/feedback
+
+Create or update feedback for a tender (upsert — one feedback per tender).
+
+Request:
+
+```ts
+interface FeedbackRequest {
+  feedback_type: "interesting" | "boring";
+}
+```
+
+Response (201):
+
+```ts
+interface FeedbackResponse {
+  pk: string;
+  source_id: string;
+  tender_id: string;
+  feedback_type: string;
+  created_at: string;  // ISO datetime
+}
+```
+
+Error: 400 if `feedback_type` is not `"interesting"` or `"boring"`.
+
+---
+
+### DELETE /tenders/{source_id}/{tender_id}/feedback
+
+Remove feedback for a tender. Idempotent — returns 204 even if no feedback existed.
+
+---
+
 ### POST /team
 
 Create a new team member.
@@ -439,7 +475,10 @@ interface TeamMemberUpdate {
   name?: string;         // 1–200 chars
   email?: string;        // valid email, unique
   phone?: string;        // max 50 chars
+  type?: "employee" | "contractor";
   roles?: string[];      // max 20 items
+  specializations?: string[];  // max 50 items, each max 200 chars
+  languages?: string[];        // max 50 items, each max 200 chars
   notes?: string;        // max 10000 chars — triggers re-extraction if CV exists
 }
 ```
@@ -451,6 +490,23 @@ Response: `TeamMemberResponse`. Returns 409 if email conflicts.
 ### DELETE /team/{id}
 
 Delete a team member and associated S3 files (CV, knowledge). Returns 204 No Content.
+
+---
+
+### GET /team/{id}/cv
+
+Download the team member's uploaded CV. Returns a presigned S3 URL (1-hour expiry).
+
+Response:
+
+```ts
+interface CvDownloadResponse {
+  filename: string;       // e.g. "john-doe.pdf"
+  presigned_url: string;  // presigned S3 URL, expires in 1 hour
+}
+```
+
+Error: 404 if member not found or no CV has been uploaded.
 
 ---
 
@@ -817,6 +873,7 @@ Detail-only fields (only on `GET /tenders/{source_id}/{tender_id}`):
 - `turnover_required` — structured extraction: `{annual_eur, years, notes}`
 - `team_requirements` — LLM-extracted team roles (same shape as `POST extract-team` response, minus `extraction_source` and `documents_used`)
 - `team_match_result` — deterministic team match fitness scoring result (same shape as `POST team-match` response)
+- `feedback_type` — user feedback for interestingness calibration: `"interesting"`, `"boring"`, or `null` (no feedback given)
 
 ## Presigned URL Expiry
 

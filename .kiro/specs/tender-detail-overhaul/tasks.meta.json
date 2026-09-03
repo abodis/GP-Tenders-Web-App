@@ -1,0 +1,716 @@
+{
+  "pbtResults": {
+    "1.4 Write property test for `computeScoreFactors`": {
+      "status": "passed",
+      "lastRunTimestamp": 1784852801407
+    },
+    "1.5 Write property test for endpoint URL construction": {
+      "status": "passed",
+      "lastRunTimestamp": 1784852825225
+    },
+    "7.3 Write property test for exclusion banner": {
+      "status": "passed",
+      "lastRunTimestamp": 1784853648374
+    },
+    "5.4 Write property test for team match rendering": {
+      "status": "passed",
+      "lastRunTimestamp": 1784853683382
+    },
+    "6.4 Write property test for reference match rendering": {
+      "status": "passed",
+      "lastRunTimestamp": 1784853729749
+    },
+    "6.3 Write property test for reference requirements rendering": {
+      "status": "passed",
+      "lastRunTimestamp": 1784853812489
+    },
+    "5.3 Write property test for team requirements rendering": {
+      "status": "passed",
+      "lastRunTimestamp": 1784856446449
+    },
+    "7.4 Write property test for exclusion criteria section": {
+      "status": "passed",
+      "lastRunTimestamp": 1784856576656
+    },
+    "9.2 Write property test for audit record rendering": {
+      "status": "passed",
+      "lastRunTimestamp": 1784856656283
+    },
+    "8.3 Write property test for score visualization color mapping": {
+      "status": "passed",
+      "lastRunTimestamp": 1784862793560
+    }
+  },
+  "executionHistory": {
+    "1.1 Add new TypeScript interfaces to `src/api/types.ts`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852525206
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852594950
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852713987
+      }
+    ],
+    "1.2 Add new endpoint functions to `src/api/endpoints.ts`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852526791
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852719621
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852838521
+      }
+    ],
+    "1.3 Create `src/utils/scoring.ts` with `computeScoreFactors`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852529548
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852596101
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852714929
+      }
+    ],
+    "1.4 Write property test for `computeScoreFactors`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852530568
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852720413
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852839660
+      }
+    ],
+    "1.5 Write property test for endpoint URL construction": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852532579
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852721186
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852840362
+      }
+    ],
+    "2.1 Create `src/hooks/useTenderActions.ts`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852533700
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852846355
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852914864
+      }
+    ],
+    "2.2 Create `src/hooks/useTenderFeedback.ts`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852535732
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852847154
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852915680
+      }
+    ],
+    "2.3 Create `src/hooks/useTenderAudit.ts`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852536692
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852847977
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852916561
+      }
+    ],
+    "3.1 Create `src/components/tender-detail/header-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852538435
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852923251
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853028009
+      }
+    ],
+    "3.2 Create `src/components/tender-detail/ai-assessment-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852539338
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852924194
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853028744
+      }
+    ],
+    "3.3 Create `src/components/tender-detail/key-facts-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852540996
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852924848
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853029590
+      }
+    ],
+    "3.4 Create `src/components/tender-detail/eligibility-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852543255
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853037690
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853153589
+      }
+    ],
+    "3.5 Create `src/components/tender-detail/description-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852545048
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852925687
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853030481
+      }
+    ],
+    "3.6 Create `src/components/tender-detail/documents-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852547432
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853038476
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853152758
+      }
+    ],
+    "3.7 Create `src/components/tender-detail/system-info-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852548436
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852926477
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853031268
+      }
+    ],
+    "3.8 Rewrite `TenderDetailPage.tsx` as orchestrator": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852550660
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853159399
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853238148
+      }
+    ],
+    "4. Checkpoint - Verify page decomposition": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852551753
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853248797
+      }
+    ],
+    "5.1 Create `src/components/tender-detail/team-requirements-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852553872
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853253954
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853375762
+      }
+    ],
+    "5.2 Create `src/components/tender-detail/team-match-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852554859
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853384272
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853539908
+      }
+    ],
+    "5.3 Write property test for team requirements rendering": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852557650
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853547135
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856466636
+      }
+    ],
+    "5.4 Write property test for team match rendering": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852558309
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853547888
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856464951
+      }
+    ],
+    "6.1 Create `src/components/tender-detail/reference-requirements-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852559625
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853254709
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853376574
+      }
+    ],
+    "6.2 Create `src/components/tender-detail/reference-match-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852560685
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853385180
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853538168
+      }
+    ],
+    "6.3 Write property test for reference requirements rendering": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852561948
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853548658
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856465760
+      }
+    ],
+    "6.4 Write property test for reference match rendering": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852562830
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853549393
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856464188
+      }
+    ],
+    "7.1 Create `src/components/tender-detail/exclusion-banner.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852564016
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853255473
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853377409
+      }
+    ],
+    "7.2 Create `src/components/tender-detail/exclusion-criteria-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852565395
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853386015
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853539046
+      }
+    ],
+    "7.3 Write property test for exclusion banner": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852566575
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853550070
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856463543
+      }
+    ],
+    "7.4 Write property test for exclusion criteria section": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852569548
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856472603
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862809683
+      }
+    ],
+    "8.1 Create `src/components/tender-detail/score-breakdown-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852570381
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853256236
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853378233
+      }
+    ],
+    "8.2 Create `src/components/tender-detail/feedback-buttons.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852573070
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853257035
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853379047
+      }
+    ],
+    "8.3 Write property test for score visualization color mapping": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852574397
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856473277
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862810550
+      }
+    ],
+    "9.1 Create `src/components/tender-detail/audit-trail-section.tsx`": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852576250
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853386824
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853537334
+      }
+    ],
+    "9.2 Write property test for audit record rendering": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852578255
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856474110
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862811173
+      }
+    ],
+    "10.1 Update `TenderDetailPage.tsx` to include all new sections": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852580415
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862817466
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862906380
+      }
+    ],
+    "11. Final checkpoint - Verify complete implementation": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852582784
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862912070
+      },
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784863008131
+      }
+    ],
+    "1. Data layer: types, endpoints, and scoring utility": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852840405
+      }
+    ],
+    "2. Hooks: actions, feedback, and audit": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784852916661
+      }
+    ],
+    "3. Page decomposition: extract existing sections into components": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784853238212
+      }
+    ],
+    "6. Reference requirements and match sections": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856465828
+      }
+    ],
+    "5. Team requirements and match sections": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784856466687
+      }
+    ],
+    "7. Exclusion criteria section and banner": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862809744
+      }
+    ],
+    "8. Score breakdown and feedback sections": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862810609
+      }
+    ],
+    "9. Audit trail section": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862811217
+      }
+    ],
+    "10. Wire new sections into page orchestrator": [
+      {
+        "executionId": "a3a7a1d1-3f59-44ce-b810-f6ad73409afe",
+        "chatSessionId": "sess_96750ecf-c9ed-41f6-b6d3-f0ea1f8c7817",
+        "timestamp": 1784862906439
+      }
+    ]
+  }
+}

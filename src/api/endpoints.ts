@@ -22,6 +22,14 @@ import type {
   ReferenceResponse,
   ReferenceCreate,
   ReferenceUpdate,
+  TeamRequirementsExtractionResponse,
+  TeamMatchResult,
+  ReferenceRequirementsExtractionResponse,
+  ReferenceMatchResult,
+  ExclusionResultResponse,
+  FeedbackRequest,
+  FeedbackResponse,
+  AuditRecord,
 } from '@/api/types'
 
 export function getTenders(
@@ -174,4 +182,54 @@ export function deleteReferenceDocument(id: string, filename: string): Promise<v
 
 export function extractReference(id: string): Promise<ReferenceResponse> {
   return apiPost<ReferenceResponse>(`/references/${id}/extract`, {})
+}
+
+// === Tender Actions ===
+
+export function extractTeamRequirements(sourceId: string, tenderId: string) {
+  return apiPost<TeamRequirementsExtractionResponse>(
+    `/tenders/${sourceId}/${tenderId}/extract-team`, {}
+  )
+}
+
+export function runTeamMatch(sourceId: string, tenderId: string) {
+  return apiPost<TeamMatchResult>(
+    `/tenders/${sourceId}/${tenderId}/team-match`, {}
+  )
+}
+
+export function extractReferenceRequirements(sourceId: string, tenderId: string) {
+  return apiPost<ReferenceRequirementsExtractionResponse>(
+    `/tenders/${sourceId}/${tenderId}/extract-references`, {}
+  )
+}
+
+export function runReferenceMatch(sourceId: string, tenderId: string) {
+  return apiPost<ReferenceMatchResult>(
+    `/tenders/${sourceId}/${tenderId}/reference-match`, {}
+  )
+}
+
+export function checkExclusion(sourceId: string, tenderId: string) {
+  return apiPost<ExclusionResultResponse>(
+    `/tenders/${sourceId}/${tenderId}/check-exclusion`, {}
+  )
+}
+
+export function submitFeedback(sourceId: string, tenderId: string, body: FeedbackRequest) {
+  return apiPost<FeedbackResponse>(
+    `/tenders/${sourceId}/${tenderId}/feedback`, body
+  )
+}
+
+export function deleteFeedback(sourceId: string, tenderId: string) {
+  return apiDelete(`/tenders/${sourceId}/${tenderId}/feedback`)
+}
+
+export function getTenderAudit(
+  sourceId: string, tenderId: string, params?: { step?: string; run_id?: string }
+) {
+  return apiFetch<AuditRecord[]>(
+    `/tenders/${sourceId}/${tenderId}/audit`, params
+  )
 }

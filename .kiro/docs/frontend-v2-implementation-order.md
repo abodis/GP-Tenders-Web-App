@@ -52,9 +52,10 @@ Implement in dependency order. Each section is one spec-sized unit — reviewabl
 ---
 
 ### Phase 5: Tender Detail Overhaul (§2–4, 6–9, 10)
-**Status: pending**
+**Status: up next**
 **Scope:** Team requirements + match display, reference requirements + match display, exclusion criteria, unified score breakdown, audit trail, feedback (thumbs up/down). All on the existing tender detail page.
 **Why last:** Largest section. Team match/reference match displays only make sense once Team + References exist.
+**Brainstorm:** `.kiro/docs/brainstorms/tender-detail-overhaul.md`
 
 ---
 

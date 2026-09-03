@@ -62,7 +62,182 @@ export interface TenderDetailResponse extends TenderListItem {
   experts_required: ExpertsRequired | null
   references_required: ReferencesRequired | null
   turnover_required: TurnoverRequired | null
+  team_requirements: TeamRequirementsData | null
+  team_match_result: TeamMatchResult | null
+  reference_requirements: ReferenceRequirementsData | null
+  reference_match_result: ReferenceMatchResult | null
+  exclusion_result: ExclusionResult | null
+  feedback_type: 'interesting' | 'boring' | null
+  interestingness_reasoning: string | null
 }
+
+// --- Team Requirements ---
+
+export interface TeamRequirement {
+  role: string
+  specializations: string[]
+  mandatory: boolean
+  min_years: number | null
+  languages: string[]
+  notes: string | null
+}
+
+export interface TeamRequirementsData {
+  team_requirements: TeamRequirement[]
+  total_experts_required: number | null
+  extraction_confidence: 'high' | 'medium' | 'low'
+}
+
+export interface TeamRequirementsExtractionResponse extends TeamRequirementsData {
+  extraction_source: 'documents' | 'description'
+  documents_used: string[]
+}
+
+// --- Team Match ---
+
+export interface BestMatch {
+  id: string
+  name: string
+  type: 'employee' | 'contractor'
+  match_score: number
+  duplicate_roles: string[]
+}
+
+export interface RoleMatch {
+  required_role: string
+  mandatory: boolean
+  best_match: BestMatch | null
+  match_score: number
+  status: 'matched' | 'partial' | 'gap'
+}
+
+export interface GapEntry {
+  role: string
+  mandatory: boolean
+  severity: 'high' | 'low'
+}
+
+export interface TeamMatchResult {
+  team_match_score: number
+  role_matches: RoleMatch[]
+  gaps: GapEntry[]
+  external_experts_needed: number
+  message: string | null
+}
+
+// --- Reference Requirements ---
+
+export interface ReferenceRequirement {
+  domain: string
+  min_projects: number | null
+  min_value_eur: number | null
+  max_age_years: number | null
+  region: string | null
+  donor_preference: string | null
+  mandatory: boolean
+  notes: string | null
+}
+
+export interface ReferenceRequirementsData {
+  reference_requirements: ReferenceRequirement[]
+  total_references_required: number | null
+  extraction_confidence: 'high' | 'medium' | 'low'
+}
+
+export interface ReferenceRequirementsExtractionResponse extends ReferenceRequirementsData {
+  extraction_source: 'documents' | 'description'
+  documents_used: string[]
+}
+
+// --- Reference Match ---
+
+export interface ReferenceBestMatch {
+  id: string
+  title: string
+  match_score: number
+  match_factors: Record<string, number>
+  consortium_coverage: boolean
+}
+
+export interface RequirementMatch {
+  domain: string
+  mandatory: boolean
+  best_matches: ReferenceBestMatch[]
+  status: 'matched' | 'partial' | 'gap'
+  coverage_count: number
+  gap_note: string | null
+}
+
+export interface ReferenceGapEntry {
+  domain: string
+  mandatory: boolean
+  severity: 'high' | 'low'
+}
+
+export interface ReferenceMatchResult {
+  reference_match_score: number
+  requirement_matches: RequirementMatch[]
+  gaps: ReferenceGapEntry[]
+  consortium_note: string | null
+  message: string | null
+}
+
+// --- Exclusion ---
+
+export type ExclusionCategory =
+  | 'financial' | 'legal' | 'experience'
+  | 'accreditation' | 'geographic' | 'consortium' | 'capacity'
+
+export interface ExclusionCriterion {
+  criterion: string
+  category: ExclusionCategory
+  assessment: 'pass' | 'fail' | 'uncertain'
+  confidence: 'high' | 'medium' | 'low'
+  reason: string
+}
+
+export interface ExclusionResult {
+  criteria: ExclusionCriterion[]
+  excluded: boolean
+  exclusion_reasons: string[]
+  uncertain_flags: string[]
+  extraction_confidence: 'high' | 'medium' | 'low'
+}
+
+export interface ExclusionResultResponse extends ExclusionResult {
+  extraction_source: 'documents' | 'description'
+  documents_used: string[]
+}
+
+// --- Audit ---
+
+export interface AuditRecord {
+  id: string
+  step: string
+  run_id: string | null
+  created_at: string
+  input_snapshot: Record<string, unknown>
+  output: Record<string, unknown>
+  model: string | null
+  model_version: string | null
+  duration_ms: number | null
+}
+
+// --- Feedback ---
+
+export interface FeedbackRequest {
+  feedback_type: 'interesting' | 'boring'
+}
+
+export interface FeedbackResponse {
+  pk: string
+  source_id: string
+  tender_id: string
+  feedback_type: string
+  created_at: string
+}
+
+// --- Legacy Analysis Fields ---
 
 export interface ExpertsRequired {
   international: number

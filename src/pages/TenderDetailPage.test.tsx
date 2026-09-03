@@ -59,6 +59,13 @@ function buildMockTender(warnings: string[]): TenderDetailResponse {
     experts_required: null,
     references_required: null,
     turnover_required: null,
+    team_requirements: null,
+    team_match_result: null,
+    reference_requirements: null,
+    reference_match_result: null,
+    exclusion_result: null,
+    feedback_type: null,
+    interestingness_reasoning: null,
   }
 }
 

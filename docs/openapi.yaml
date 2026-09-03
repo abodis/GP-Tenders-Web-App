@@ -7,770 +7,761 @@ paths:
   /health:
     get:
       summary: Health Check
-      description: 'Check API health by verifying Postgres connectivity.
+      description: "Check API health by verifying Postgres connectivity.
 
 
-        Runs a simple SELECT 1 query. Returns 200 on success, 503 if unreachable.'
+        Runs a simple SELECT 1 query. Returns 200 on success, 503 if unreachable."
       operationId: health_check_health_get
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
+                $ref: "#/components/schemas/HealthResponse"
   /sources/{source_id}/runs:
     get:
       summary: List Runs
       description: List scrape runs for a source, ordered by run_date descending.
       operationId: list_runs_sources__source_id__runs_get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          default: 20
-          title: Page Size
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          default: 1
-          title: Page
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 20
+            title: Page Size
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Page
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-        '422':
+                $ref: "#/components/schemas/PaginatedResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /sources/{source_id}/runs/{run_date}:
     get:
       summary: Get Run
       description: Get a single run by source_id and run_date, including full statistics.
       operationId: get_run_sources__source_id__runs__run_date__get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: run_date
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Run Date
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: run_date
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Run Date
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RunDetailResponse'
-        '422':
+                $ref: "#/components/schemas/RunDetailResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders:
     get:
       summary: List Tenders
       description: List tenders with optional filters, sorting, and offset pagination.
       operationId: list_tenders_tenders_get
       parameters:
-      - name: source_id
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Source Id
-      - name: discovered_from
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Discovered From
-      - name: discovered_to
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Discovered To
-      - name: status
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Status
-      - name: fully_visible
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Fully Visible
-      - name: analyzed
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: boolean
-          - type: 'null'
-          title: Analyzed
-      - name: min_score
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Min Score
-      - name: tender_type
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Tender Type
-      - name: min_interestingness
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: integer
-            maximum: 10
+        - name: source_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Source Id
+        - name: discovered_from
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Discovered From
+        - name: discovered_to
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Discovered To
+        - name: status
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Status
+        - name: fully_visible
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: boolean
+              - type: "null"
+            title: Fully Visible
+        - name: analyzed
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: boolean
+              - type: "null"
+            title: Analyzed
+        - name: min_score
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            title: Min Score
+        - name: tender_type
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Tender Type
+        - name: min_interestingness
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+                maximum: 10
+                minimum: 1
+              - type: "null"
+            title: Min Interestingness
+        - name: q
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                maxLength: 500
+              - type: "null"
+            title: Q
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Sort By
+        - name: sort_direction
+          in: query
+          required: false
+          schema:
+            type: string
+            default: desc
+            title: Sort Direction
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
             minimum: 1
-          - type: 'null'
-          title: Min Interestingness
-      - name: q
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-            maxLength: 500
-          - type: 'null'
-          title: Q
-      - name: sort_by
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Sort By
-      - name: sort_direction
-        in: query
-        required: false
-        schema:
-          type: string
-          default: desc
-          title: Sort Direction
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          default: 20
-          title: Page Size
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          default: 1
-          title: Page
+            default: 20
+            title: Page Size
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Page
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-        '422':
+                $ref: "#/components/schemas/PaginatedResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}:
     get:
       summary: Get Tender
-      description: Get full tender detail by PK, merging S3 content for completed
+      description:
+        Get full tender detail by PK, merging S3 content for completed
         tenders.
       operationId: get_tender_tenders__source_id___tender_id__get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TenderDetailResponse'
-        '422':
+                $ref: "#/components/schemas/TenderDetailResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/audit:
     get:
       summary: Get Tender Audit
       description: Return audit trail for a tender, ordered by created_at DESC.
       operationId: get_tender_audit_tenders__source_id___tender_id__audit_get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
-      - name: run_id
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Run Id
-      - name: step
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Step
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
+        - name: run_id
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Run Id
+        - name: step
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Step
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AuditRecordResponse'
-                title: Response Get Tender Audit Tenders  Source Id   Tender Id  Audit
+                  $ref: "#/components/schemas/AuditRecordResponse"
+                title:
+                  Response Get Tender Audit Tenders  Source Id   Tender Id  Audit
                   Get
-        '422':
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /sources/{source_id}/runs/{run_date}/tenders:
     get:
       summary: List Run Tenders
       description: List tenders discovered or processed by a specific run.
       operationId: list_run_tenders_sources__source_id__runs__run_date__tenders_get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: run_date
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Run Date
-      - name: phase
-        in: query
-        required: false
-        schema:
-          type: string
-          pattern: ^(discovered|processed)$
-          default: discovered
-          title: Phase
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          default: 20
-          title: Page Size
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          default: 1
-          title: Page
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: run_date
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Run Date
+        - name: phase
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: ^(discovered|processed)$
+            default: discovered
+            title: Phase
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 20
+            title: Page Size
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Page
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-        '422':
+                $ref: "#/components/schemas/PaginatedResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/extract-team:
     post:
       summary: Extract Team
       description: Trigger team requirement extraction for a single tender.
       operationId: extract_team_tenders__source_id___tender_id__extract_team_post
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Extract Team Tenders  Source Id   Tender Id  Extract
-                  Team Post
-        '422':
+                $ref: "#/components/schemas/TeamRequirementsExtractionResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/extract-references:
     post:
       summary: Extract References
       description: Trigger reference requirement extraction for a single tender.
       operationId: extract_references_tenders__source_id___tender_id__extract_references_post
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Extract References Tenders  Source Id   Tender Id  Extract
-                  References Post
-        '422':
+                $ref: "#/components/schemas/ReferenceRequirementsExtractionResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/check-exclusion:
     post:
       summary: Check Exclusion
       description: Trigger exclusion criteria evaluation for a single tender.
       operationId: check_exclusion_tenders__source_id___tender_id__check_exclusion_post
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Check Exclusion Tenders  Source Id   Tender Id  Check
-                  Exclusion Post
-        '422':
+                $ref: "#/components/schemas/ExclusionResultResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/team-match:
     post:
       summary: Team Match
       description: Trigger team match fitness scoring for a single tender.
       operationId: team_match_tenders__source_id___tender_id__team_match_post
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Team Match Tenders  Source Id   Tender Id  Team Match
-                  Post
-        '422':
+                $ref: "#/components/schemas/TeamMatchResult"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/reference-match:
     post:
       summary: Reference Match
       description: Trigger reference match fitness scoring for a single tender.
       operationId: reference_match_tenders__source_id___tender_id__reference_match_post
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Reference Match Tenders  Source Id   Tender Id  Reference
-                  Match Post
-        '422':
+                $ref: "#/components/schemas/ReferenceMatchResult"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/feedback:
     post:
       summary: Create Feedback
-      description: Create or update feedback for a tender (upsert — one feedback per
+      description:
+        Create or update feedback for a tender (upsert — one feedback per
         tender).
       operationId: create_feedback_tenders__source_id___tender_id__feedback_post
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FeedbackRequest'
+              $ref: "#/components/schemas/FeedbackRequest"
       responses:
-        '201':
+        "201":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeedbackResponse'
-        '422':
+                $ref: "#/components/schemas/FeedbackResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     delete:
       summary: Delete Feedback
-      description: Remove feedback for a tender. Idempotent — returns 204 even if
+      description:
+        Remove feedback for a tender. Idempotent — returns 204 even if
         no record exists.
       operationId: delete_feedback_tenders__source_id___tender_id__feedback_delete
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '204':
+        "204":
           description: Successful Response
-        '422':
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/documents:
     get:
       summary: List Documents
       description: List all documents for a tender with presigned download URLs.
       operationId: list_documents_tenders__source_id___tender_id__documents_get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-        '422':
+                $ref: "#/components/schemas/PaginatedResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /tenders/{source_id}/{tender_id}/documents/{filename}:
     get:
       summary: Get Document
       description: Return a presigned URL for a single tender document.
       operationId: get_document_tenders__source_id___tender_id__documents__filename__get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
-      - name: tender_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Tender Id
-      - name: filename
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Filename
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
+        - name: tender_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Tender Id
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Filename
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentUrlResponse'
-        '422':
+                $ref: "#/components/schemas/DocumentUrlResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /sources/:
     get:
       summary: List Sources
       description: Return all loaded source configs as a paginated list.
       operationId: list_sources_sources__get
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
+                $ref: "#/components/schemas/PaginatedResponse"
   /sources/{source_id}:
     get:
       summary: Get Source
       description: Return full config for a single source, sanitized.
       operationId: get_source_sources__source_id__get
       parameters:
-      - name: source_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Source Id
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Source Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SourceDetailResponse'
-        '422':
+                $ref: "#/components/schemas/SourceDetailResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /settings:
     get:
       summary: List Settings
       description: List all settings.
       operationId: list_settings_settings_get
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SettingsListResponse'
+                $ref: "#/components/schemas/SettingsListResponse"
   /settings/{setting_type}:
     get:
       summary: Get Setting
       description: Get a single setting by type.
       operationId: get_setting_settings__setting_type__get
       parameters:
-      - name: setting_type
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Setting Type
+        - name: setting_type
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Setting Type
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SettingResponse'
-        '422':
+                $ref: "#/components/schemas/SettingResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     put:
       summary: Update Setting
-      description: Full replacement of a setting. Validates body against the type-specific
+      description:
+        Full replacement of a setting. Validates body against the type-specific
         model.
       operationId: update_setting_settings__setting_type__put
       parameters:
-      - name: setting_type
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Setting Type
+        - name: setting_type
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Setting Type
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SettingResponse'
-        '422':
+                $ref: "#/components/schemas/SettingResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /team:
     post:
       summary: Create Team Member
-      description: Create a new team member with slug generation and email uniqueness
+      description:
+        Create a new team member with slug generation and email uniqueness
         check.
       operationId: create_team_member_team_post
       requestBody:
@@ -778,178 +769,207 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamMemberCreate'
+              $ref: "#/components/schemas/TeamMemberCreate"
       responses:
-        '201':
+        "201":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamMemberResponse'
-        '422':
+                $ref: "#/components/schemas/TeamMemberResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     get:
       summary: List Team Members
       description: List team members with pagination, optional type filter and search.
       operationId: list_team_members_team_get
       parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          default: 1
-          title: Page
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          default: 20
-          title: Page Size
-      - name: type
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Type
-      - name: search
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Search
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Page
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 20
+            title: Page Size
+        - name: type
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Type
+        - name: search
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Search
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-        '422':
+                $ref: "#/components/schemas/PaginatedResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /team/{member_id}:
     get:
       summary: Get Team Member
       description: Get a single team member by UUID.
       operationId: get_team_member_team__member_id__get
       parameters:
-      - name: member_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Member Id
+        - name: member_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Member Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamMemberResponse'
-        '422':
+                $ref: "#/components/schemas/TeamMemberResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     put:
       summary: Update Team Member
       description: Partial update of a team member. Returns the full updated record.
       operationId: update_team_member_team__member_id__put
       parameters:
-      - name: member_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Member Id
+        - name: member_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Member Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamMemberUpdate'
+              $ref: "#/components/schemas/TeamMemberUpdate"
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamMemberResponse'
-        '422':
+                $ref: "#/components/schemas/TeamMemberResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     delete:
       summary: Delete Team Member
       description: Delete a team member and clean up associated S3 keys.
       operationId: delete_team_member_team__member_id__delete
       parameters:
-      - name: member_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Member Id
+        - name: member_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Member Id
       responses:
-        '204':
+        "204":
           description: Successful Response
-        '422':
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /team/{member_id}/cv:
+    get:
+      summary: Download Cv
+      description:
+        Return a presigned S3 URL for downloading the team member's CV.
+        Returns 404 if no CV uploaded.
+      operationId: download_cv_team__member_id__cv_get
+      parameters:
+        - name: member_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Member Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CvDownloadResponse"
+        "404":
+          description: Team member not found or no CV uploaded
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
     post:
       summary: Upload Cv
-      description: Upload a CV (PDF/DOCX) for a team member. Stores in S3 and triggers
+      description:
+        Upload a CV (PDF/DOCX) for a team member. Stores in S3 and triggers
         extraction.
       operationId: upload_cv_team__member_id__cv_post
       parameters:
-      - name: member_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Member Id
+        - name: member_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Member Id
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Body_upload_cv_team__member_id__cv_post'
+              $ref: "#/components/schemas/Body_upload_cv_team__member_id__cv_post"
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TeamMemberResponse'
-        '422':
+                $ref: "#/components/schemas/TeamMemberResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /references:
     post:
       summary: Create Reference
@@ -960,241 +980,244 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReferenceCreate'
+              $ref: "#/components/schemas/ReferenceCreate"
       responses:
-        '201':
+        "201":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReferenceResponse'
-        '422':
+                $ref: "#/components/schemas/ReferenceResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     get:
       summary: List References
-      description: List references with pagination, optional sector/year filters and
+      description:
+        List references with pagination, optional sector/year filters and
         search.
       operationId: list_references_references_get
       parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          default: 1
-          title: Page
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          default: 20
-          title: Page Size
-      - name: sector
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Sector
-      - name: year
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          title: Year
-      - name: search
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-            maxLength: 200
-          - type: 'null'
-          title: Search
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            title: Page
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            minimum: 1
+            default: 20
+            title: Page Size
+        - name: sector
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+              - type: "null"
+            title: Sector
+        - name: year
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            title: Year
+        - name: search
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: string
+                maxLength: 200
+              - type: "null"
+            title: Search
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponse'
-        '422':
+                $ref: "#/components/schemas/PaginatedResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /references/{reference_id}:
     get:
       summary: Get Reference
-      description: Get a single reference with enriched experts and document presigned
+      description:
+        Get a single reference with enriched experts and document presigned
         URLs.
       operationId: get_reference_references__reference_id__get
       parameters:
-      - name: reference_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Reference Id
+        - name: reference_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Reference Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReferenceResponse'
-        '422':
+                $ref: "#/components/schemas/ReferenceResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     delete:
       summary: Delete Reference
       description: Delete a reference and all associated S3 objects.
       operationId: delete_reference_references__reference_id__delete
       parameters:
-      - name: reference_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Reference Id
+        - name: reference_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Reference Id
       responses:
-        '204':
+        "204":
           description: Successful Response
-        '422':
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
     put:
       summary: Update Reference
       description: Partial update of a reference. Re-extracts if description changes.
       operationId: update_reference_references__reference_id__put
       parameters:
-      - name: reference_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Reference Id
+        - name: reference_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Reference Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReferenceUpdate'
+              $ref: "#/components/schemas/ReferenceUpdate"
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReferenceResponse'
-        '422':
+                $ref: "#/components/schemas/ReferenceResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /references/{reference_id}/extract:
     post:
       summary: Extract Reference
       description: Manually trigger LLM extraction for a reference.
       operationId: extract_reference_references__reference_id__extract_post
       parameters:
-      - name: reference_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Reference Id
+        - name: reference_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Reference Id
       responses:
-        '200':
+        "200":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReferenceResponse'
-        '422':
+                $ref: "#/components/schemas/ReferenceResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /references/{reference_id}/document/{filename}:
     delete:
       summary: Delete Document
-      description: Delete a specific document from a reference. Re-extracts from remaining
+      description:
+        Delete a specific document from a reference. Re-extracts from remaining
         context.
       operationId: delete_document_references__reference_id__document__filename__delete
       parameters:
-      - name: reference_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Reference Id
-      - name: filename
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Filename
+        - name: reference_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Reference Id
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Filename
       responses:
-        '204':
+        "204":
           description: Successful Response
-        '422':
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
   /references/{reference_id}/document:
     post:
       summary: Upload Document
       description: Upload a document (PDF/DOCX) to a reference. Triggers re-extraction.
       operationId: upload_document_references__reference_id__document_post
       parameters:
-      - name: reference_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Reference Id
+        - name: reference_id
+          in: path
+          required: true
+          schema:
+            type: string
+            title: Reference Id
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Body_upload_document_references__reference_id__document_post'
+              $ref: "#/components/schemas/Body_upload_document_references__reference_id__document_post"
       responses:
-        '201':
+        "201":
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReferenceResponse'
-        '422':
+                $ref: "#/components/schemas/ReferenceResponse"
+        "422":
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     AuditRecordResponse:
@@ -1207,8 +1230,8 @@ components:
           title: Step
         run_id:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Run Id
         created_at:
           type: string
@@ -1223,30 +1246,30 @@ components:
           title: Output
         model:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Model
         model_version:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Model Version
         duration_ms:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Duration Ms
       type: object
       required:
-      - id
-      - step
-      - run_id
-      - created_at
-      - input_snapshot
-      - output
-      - model
-      - model_version
-      - duration_ms
+        - id
+        - step
+        - run_id
+        - created_at
+        - input_snapshot
+        - output
+        - model
+        - model_version
+        - duration_ms
       title: AuditRecordResponse
     Body_upload_cv_team__member_id__cv_post:
       properties:
@@ -1256,7 +1279,7 @@ components:
           title: File
       type: object
       required:
-      - file
+        - file
       title: Body_upload_cv_team__member_id__cv_post
     Body_upload_document_references__reference_id__document_post:
       properties:
@@ -1266,7 +1289,7 @@ components:
           title: File
       type: object
       required:
-      - file
+        - file
       title: Body_upload_document_references__reference_id__document_post
     CollectorResultResponse:
       properties:
@@ -1297,6 +1320,20 @@ components:
       type: object
       title: CollectorResultResponse
       description: Statistics from the collector (discovery) phase of a scrape run.
+    CvDownloadResponse:
+      properties:
+        filename:
+          type: string
+          title: Filename
+        presigned_url:
+          type: string
+          title: Presigned Url
+      type: object
+      required:
+        - filename
+        - presigned_url
+      title: CvDownloadResponse
+      description: Presigned S3 URL for downloading a team member's CV.
     DocumentInfo:
       properties:
         filename:
@@ -1307,8 +1344,8 @@ components:
           title: Presigned Url
       type: object
       required:
-      - filename
-      - presigned_url
+        - filename
+        - presigned_url
       title: DocumentInfo
       description: Document filename with presigned S3 URL.
     DocumentUrlResponse:
@@ -1321,8 +1358,8 @@ components:
           title: Url
       type: object
       required:
-      - filename
-      - url
+        - filename
+        - url
       title: DocumentUrlResponse
       description: Single document presigned URL response.
     EnrichedExpert:
@@ -1340,9 +1377,9 @@ components:
           title: Roles
       type: object
       required:
-      - id
-      - name
-      - roles
+        - id
+        - name
+        - roles
       title: EnrichedExpert
       description: Expert info enriched from team_members lookup.
     FeedbackRequest:
@@ -1350,10 +1387,10 @@ components:
         feedback_type:
           type: string
           title: Feedback Type
-          description: 'Feedback type: ''interesting'' or ''boring'''
+          description: "Feedback type: 'interesting' or 'boring'"
       type: object
       required:
-      - feedback_type
+        - feedback_type
       title: FeedbackRequest
     FeedbackResponse:
       properties:
@@ -1374,17 +1411,17 @@ components:
           title: Created At
       type: object
       required:
-      - pk
-      - source_id
-      - tender_id
-      - feedback_type
-      - created_at
+        - pk
+        - source_id
+        - tender_id
+        - feedback_type
+        - created_at
       title: FeedbackResponse
     HTTPValidationError:
       properties:
         detail:
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
           type: array
           title: Detail
       type: object
@@ -1396,12 +1433,12 @@ components:
           title: Status
         error:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Error
       type: object
       required:
-      - status
+        - status
       title: HealthResponse
       description: Health check response.
     PaginatedResponse:
@@ -1417,10 +1454,11 @@ components:
           description: Number of items in this page
         total_count:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Total Count
-          description: Total items matching current filters (before pagination); null
+          description:
+            Total items matching current filters (before pagination); null
             when unavailable
         page:
           type: integer
@@ -1429,14 +1467,14 @@ components:
           default: 1
         total_pages:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Total Pages
           description: Total number of pages; null when unavailable
       type: object
       required:
-      - items
-      - count
+        - items
+        - count
       title: PaginatedResponse
       description: Envelope for all list endpoints.
     ReferenceCreate:
@@ -1448,36 +1486,36 @@ components:
           title: Title
         client:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Client
         sector:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Sector
         region:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Region
         year:
           anyOf:
-          - type: integer
-            maximum: 2030.0
-            minimum: 1990.0
-          - type: 'null'
+            - type: integer
+              maximum: 2030.0
+              minimum: 1990.0
+            - type: "null"
           title: Year
         budget_eur:
           anyOf:
-          - type: integer
-            minimum: 0.0
-          - type: 'null'
+            - type: integer
+              minimum: 0.0
+            - type: "null"
           title: Budget Eur
         description:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Description
         experts_involved:
           items:
@@ -1492,7 +1530,7 @@ components:
           title: Consortium Partners
       type: object
       required:
-      - title
+        - title
       title: ReferenceCreate
       description: Request model for creating a new reference.
     ReferenceResponse:
@@ -1505,33 +1543,33 @@ components:
           title: Title
         client:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Client
         sector:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Sector
         region:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Region
         year:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Year
         budget_eur:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Budget Eur
         description:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Description
         experts_involved:
           items:
@@ -1550,8 +1588,8 @@ components:
           title: Documents
         knowledge_s3_key:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Knowledge S3 Key
         extraction_status:
           type: string
@@ -1571,91 +1609,91 @@ components:
           title: Updated At
         enriched_experts:
           items:
-            $ref: '#/components/schemas/EnrichedExpert'
+            $ref: "#/components/schemas/EnrichedExpert"
           type: array
           title: Enriched Experts
         document_urls:
           items:
-            $ref: '#/components/schemas/DocumentInfo'
+            $ref: "#/components/schemas/DocumentInfo"
           type: array
           title: Document Urls
       type: object
       required:
-      - id
-      - title
-      - client
-      - sector
-      - region
-      - year
-      - budget_eur
-      - description
-      - experts_involved
-      - consortium_partners
-      - documents
-      - knowledge_s3_key
-      - extraction_status
-      - extracted_fields
-      - slug
-      - created_at
-      - updated_at
+        - id
+        - title
+        - client
+        - sector
+        - region
+        - year
+        - budget_eur
+        - description
+        - experts_involved
+        - consortium_partners
+        - documents
+        - knowledge_s3_key
+        - extraction_status
+        - extracted_fields
+        - slug
+        - created_at
+        - updated_at
       title: ReferenceResponse
       description: Full reference record for detail responses.
     ReferenceUpdate:
       properties:
         title:
           anyOf:
-          - type: string
-            maxLength: 500
-            minLength: 1
-          - type: 'null'
+            - type: string
+              maxLength: 500
+              minLength: 1
+            - type: "null"
           title: Title
         client:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Client
         sector:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Sector
         region:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Region
         year:
           anyOf:
-          - type: integer
-            maximum: 2030.0
-            minimum: 1990.0
-          - type: 'null'
+            - type: integer
+              maximum: 2030.0
+              minimum: 1990.0
+            - type: "null"
           title: Year
         budget_eur:
           anyOf:
-          - type: integer
-            minimum: 0.0
-          - type: 'null'
+            - type: integer
+              minimum: 0.0
+            - type: "null"
           title: Budget Eur
         description:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Description
         experts_involved:
           anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 50
-          - type: 'null'
+            - items:
+                type: string
+              type: array
+              maxItems: 50
+            - type: "null"
           title: Experts Involved
         consortium_partners:
           anyOf:
-          - items:
-              type: string
-            type: array
-          - type: 'null'
+            - items:
+                type: string
+              type: array
+            - type: "null"
           title: Consortium Partners
       type: object
       title: ReferenceUpdate
@@ -1688,7 +1726,8 @@ components:
           default: 0
       type: object
       title: RetrieverResultResponse
-      description: Statistics from the retriever (detail-fetch) phase of a scrape
+      description:
+        Statistics from the retriever (detail-fetch) phase of a scrape
         run.
     RunDetailResponse:
       properties:
@@ -1706,27 +1745,27 @@ components:
           title: Started At
         completed_at:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Completed At
         status:
           type: string
           title: Status
         collector_result:
           anyOf:
-          - $ref: '#/components/schemas/CollectorResultResponse'
-          - type: 'null'
+            - $ref: "#/components/schemas/CollectorResultResponse"
+            - type: "null"
         retriever_result:
           anyOf:
-          - $ref: '#/components/schemas/RetrieverResultResponse'
-          - type: 'null'
+            - $ref: "#/components/schemas/RetrieverResultResponse"
+            - type: "null"
       type: object
       required:
-      - pk
-      - source_id
-      - run_date
-      - started_at
-      - status
+        - pk
+        - source_id
+        - run_date
+        - started_at
+        - status
       title: RunDetailResponse
       description: Full scrape run including collector and retriever statistics.
     SettingResponse:
@@ -1742,10 +1781,11 @@ components:
       additionalProperties: true
       type: object
       required:
-      - setting_type
-      - updated_at
+        - setting_type
+        - updated_at
       title: SettingResponse
-      description: Response model for a single setting. Extra fields allowed for varying
+      description:
+        Response model for a single setting. Extra fields allowed for varying
         shapes.
     SettingsListResponse:
       properties:
@@ -1762,8 +1802,8 @@ components:
           description: Number of items returned
       type: object
       required:
-      - items
-      - count
+        - items
+        - count
       title: SettingsListResponse
       description: Response model for listing all settings.
     SourceDetailResponse:
@@ -1804,21 +1844,21 @@ components:
           title: Daily Detail Limit
         eligibility_defaults:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - additionalProperties: true
+              type: object
+            - type: "null"
           title: Eligibility Defaults
       type: object
       required:
-      - source_id
-      - enabled
-      - base_url
-      - api_endpoints
-      - auth
-      - proxy
-      - throttle
-      - searches
-      - daily_detail_limit
+        - source_id
+        - enabled
+        - base_url
+        - api_endpoints
+        - auth
+        - proxy
+        - throttle
+        - searches
+        - daily_detail_limit
       title: SourceDetailResponse
       description: Full source configuration (sanitized — no secrets).
     TeamMemberCreate:
@@ -1836,8 +1876,8 @@ components:
         type:
           type: string
           enum:
-          - employee
-          - contractor
+            - employee
+            - contractor
           title: Type
         roles:
           items:
@@ -1847,9 +1887,9 @@ components:
           title: Roles
       type: object
       required:
-      - name
-      - email
-      - type
+        - name
+        - email
+        - type
       title: TeamMemberCreate
       description: Request model for creating a new team member.
     TeamMemberResponse:
@@ -1862,8 +1902,8 @@ components:
           title: Name
         email:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Email
         type:
           type: string
@@ -1873,8 +1913,8 @@ components:
           title: Slug
         phone:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Phone
         roles:
           items:
@@ -1893,18 +1933,18 @@ components:
           title: Languages
         notes:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Notes
         cv_s3_key:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Cv S3 Key
         knowledge_s3_key:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Knowledge S3 Key
         extraction_status:
           type: string
@@ -1917,58 +1957,82 @@ components:
           title: Updated At
       type: object
       required:
-      - id
-      - name
-      - email
-      - type
-      - slug
-      - phone
-      - roles
-      - specializations
-      - languages
-      - notes
-      - cv_s3_key
-      - knowledge_s3_key
-      - extraction_status
-      - created_at
-      - updated_at
+        - id
+        - name
+        - email
+        - type
+        - slug
+        - phone
+        - roles
+        - specializations
+        - languages
+        - notes
+        - cv_s3_key
+        - knowledge_s3_key
+        - extraction_status
+        - created_at
+        - updated_at
       title: TeamMemberResponse
       description: Full team member record for detail responses.
     TeamMemberUpdate:
       properties:
         name:
           anyOf:
-          - type: string
-            maxLength: 200
-            minLength: 1
-          - type: 'null'
+            - type: string
+              maxLength: 200
+              minLength: 1
+            - type: "null"
           title: Name
         email:
           anyOf:
-          - type: string
-            maxLength: 254
-            format: email
-          - type: 'null'
+            - type: string
+              maxLength: 254
+              format: email
+            - type: "null"
           title: Email
         phone:
           anyOf:
-          - type: string
-            maxLength: 50
-          - type: 'null'
+            - type: string
+              maxLength: 50
+            - type: "null"
           title: Phone
+        type:
+          anyOf:
+            - type: string
+              enum:
+                - employee
+                - contractor
+            - type: "null"
+          title: Type
         roles:
           anyOf:
-          - items:
-              type: string
-            type: array
-            maxItems: 20
-          - type: 'null'
+            - items:
+                type: string
+              type: array
+              maxItems: 20
+            - type: "null"
           title: Roles
+        specializations:
+          anyOf:
+            - items:
+                type: string
+              type: array
+              maxItems: 50
+            - type: "null"
+          title: Specializations
+        languages:
+          anyOf:
+            - items:
+                type: string
+              type: array
+              maxItems: 50
+            - type: "null"
+          title: Languages
         notes:
           anyOf:
-          - type: string
-            maxLength: 10000
-          - type: 'null'
+            - type: string
+              maxLength: 10000
+            - type: "null"
           title: Notes
       type: object
       title: TeamMemberUpdate
@@ -1989,8 +2053,8 @@ components:
           title: Posted Date
         deadline:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Deadline
         discovered_at:
           type: string
@@ -2008,28 +2072,28 @@ components:
           default: 0
         currency:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Currency
         status_name:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Status Name
         location_names:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Location Names
         sectors:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Sectors
         types:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Types
         documents_total:
           type: integer
@@ -2037,13 +2101,13 @@ components:
           default: 0
         relevance_score:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Relevance Score
         analysis_summary:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Analysis Summary
         analysis_tags:
           items:
@@ -2052,33 +2116,33 @@ components:
           title: Analysis Tags
         tender_type:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Tender Type
         analyzed_at:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Analyzed At
         organization:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Organization
         interestingness_score:
           anyOf:
-          - type: integer
-          - type: 'null'
+            - type: integer
+            - type: "null"
           title: Interestingness Score
         interestingness_reasoning:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Interestingness Reasoning
         unified_score:
           anyOf:
-          - type: number
-          - type: 'null'
+            - type: number
+            - type: "null"
           title: Unified Score
         pk:
           type: string
@@ -2089,18 +2153,18 @@ components:
           default: 0
         last_attempt:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Last Attempt
         last_error:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Last Error
         s3_prefix:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: S3 Prefix
         documents_downloaded:
           type: integer
@@ -2112,29 +2176,29 @@ components:
           default: 0
         skip_reason:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Skip Reason
         discovered_run_id:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Discovered Run Id
         processed_run_id:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Processed Run Id
         detail:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - additionalProperties: true
+              type: object
+            - type: "null"
           title: Detail
         description_text:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Description Text
         warnings:
           items:
@@ -2143,85 +2207,620 @@ components:
           title: Warnings
         analysis_context:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Analysis Context
         analysis_model:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Analysis Model
         emailed_at:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
           title: Emailed At
         experts_required:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/ExpertsRequired"
+            - type: "null"
           title: Experts Required
+          description: "Legacy first-pass extraction. Use team_requirements for detailed data."
         references_required:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/ReferencesRequired"
+            - type: "null"
           title: References Required
+          description: "Legacy first-pass extraction. Use reference_requirements for detailed data."
         turnover_required:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/TurnoverRequired"
+            - type: "null"
           title: Turnover Required
         team_requirements:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/TeamRequirementsExtraction"
+            - type: "null"
           title: Team Requirements
         team_match_result:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/TeamMatchResult"
+            - type: "null"
           title: Team Match Result
         reference_requirements:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/ReferenceRequirementsExtraction"
+            - type: "null"
           title: Reference Requirements
         reference_match_result:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/ReferenceMatchResult"
+            - type: "null"
           title: Reference Match Result
         exclusion_result:
           anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
+            - $ref: "#/components/schemas/ExclusionResult"
+            - type: "null"
           title: Exclusion Result
+        feedback_type:
+          anyOf:
+            - type: string
+              enum:
+                - interesting
+                - boring
+            - type: "null"
+          default: null
+          title: Feedback Type
+          description: User feedback for interestingness calibration, if any.
       type: object
       required:
-      - source_id
-      - tender_id
-      - title
-      - posted_date
-      - discovered_at
-      - status
-      - pk
+        - source_id
+        - tender_id
+        - title
+        - posted_date
+        - discovered_at
+        - status
+        - pk
       title: TenderDetailResponse
       description: Full tender record including S3 content, warnings, and run linkage.
+    ExpertsRequired:
+      type: object
+      description: "Legacy first-pass LLM extraction of expert/staffing requirements. Shape is best-effort from LLM."
+      properties:
+        international:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Number of international experts required.
+        local:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Number of local/national experts required.
+        key_experts:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Number of key (senior) experts required.
+        total:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Total number of experts required.
+        notes:
+          anyOf:
+            - type: string
+            - type: "null"
+          description: Additional notes about staffing requirements.
+      additionalProperties: true
+      title: ExpertsRequired
+    ReferencesRequired:
+      type: object
+      description: "Legacy first-pass LLM extraction of reference/experience requirements. Shape is best-effort from LLM."
+      properties:
+        count:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Number of references required.
+        type:
+          anyOf:
+            - type: string
+            - type: "null"
+          description: Type of references (e.g. "similar projects", "same sector").
+        value_eur:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Minimum value (EUR) of required reference projects.
+        timeline_years:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: How recent references must be (years).
+        notes:
+          anyOf:
+            - type: string
+            - type: "null"
+          description: Additional notes about reference requirements.
+      additionalProperties: true
+      title: ReferencesRequired
+    TurnoverRequired:
+      type: object
+      description: "Legacy first-pass LLM extraction of financial turnover requirements. Shape is best-effort from LLM."
+      properties:
+        annual_eur:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Required annual turnover in EUR.
+        years:
+          anyOf:
+            - type: integer
+            - type: "null"
+          description: Number of years the turnover threshold must be met.
+        notes:
+          anyOf:
+            - type: string
+            - type: "null"
+          description: Additional notes about financial requirements.
+      additionalProperties: true
+      title: TurnoverRequired
+    TeamRequirement:
+      type: object
+      properties:
+        role:
+          type: string
+        specializations:
+          type: array
+          items:
+            type: string
+        mandatory:
+          type: boolean
+          default: true
+        min_years:
+          anyOf:
+            - type: integer
+            - type: "null"
+        languages:
+          type: array
+          items:
+            type: string
+        notes:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - role
+      title: TeamRequirement
+    TeamRequirementsExtraction:
+      type: object
+      description: Result of LLM team requirement extraction from tender documents.
+      properties:
+        team_requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamRequirement"
+        total_experts_required:
+          anyOf:
+            - type: integer
+            - type: "null"
+        extraction_confidence:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+      required:
+        - team_requirements
+        - extraction_confidence
+      title: TeamRequirementsExtraction
+    TeamRequirementsExtractionResponse:
+      type: object
+      description: Response from POST extract-team, includes extraction metadata.
+      allOf:
+        - $ref: "#/components/schemas/TeamRequirementsExtraction"
+        - type: object
+          properties:
+            extraction_source:
+              type: string
+              enum:
+                - documents
+                - description
+            documents_used:
+              type: array
+              items:
+                type: string
+          required:
+            - extraction_source
+            - documents_used
+      title: TeamRequirementsExtractionResponse
+    BestMatch:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - employee
+            - contractor
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        duplicate_roles:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - type
+        - match_score
+      title: BestMatch
+    RoleMatch:
+      type: object
+      properties:
+        required_role:
+          type: string
+        mandatory:
+          type: boolean
+        best_match:
+          anyOf:
+            - $ref: "#/components/schemas/BestMatch"
+            - type: "null"
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        status:
+          type: string
+          enum:
+            - matched
+            - partial
+            - gap
+      required:
+        - required_role
+        - mandatory
+        - match_score
+        - status
+      title: RoleMatch
+    GapEntry:
+      type: object
+      properties:
+        role:
+          type: string
+        mandatory:
+          type: boolean
+        severity:
+          type: string
+          enum:
+            - high
+            - low
+      required:
+        - role
+        - mandatory
+        - severity
+      title: GapEntry
+    TeamMatchResult:
+      type: object
+      description: Result of deterministic team match fitness scoring.
+      properties:
+        team_match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Overall weighted score (4 decimal places).
+        role_matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleMatch"
+        gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/GapEntry"
+        external_experts_needed:
+          type: integer
+          description: Count of roles with status "gap".
+        message:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - team_match_score
+        - role_matches
+        - gaps
+        - external_experts_needed
+      title: TeamMatchResult
+    ReferenceRequirement:
+      type: object
+      properties:
+        domain:
+          type: string
+        min_projects:
+          anyOf:
+            - type: integer
+            - type: "null"
+        min_value_eur:
+          anyOf:
+            - type: integer
+            - type: "null"
+        max_age_years:
+          anyOf:
+            - type: integer
+            - type: "null"
+        region:
+          anyOf:
+            - type: string
+            - type: "null"
+        donor_preference:
+          anyOf:
+            - type: string
+            - type: "null"
+        mandatory:
+          type: boolean
+          default: true
+        notes:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - domain
+      title: ReferenceRequirement
+    ReferenceRequirementsExtraction:
+      type: object
+      description: Result of LLM reference requirement extraction from tender documents.
+      properties:
+        reference_requirements:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferenceRequirement"
+        total_references_required:
+          anyOf:
+            - type: integer
+            - type: "null"
+        extraction_confidence:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+      required:
+        - reference_requirements
+        - extraction_confidence
+      title: ReferenceRequirementsExtraction
+    ReferenceRequirementsExtractionResponse:
+      type: object
+      description: Response from POST extract-references, includes extraction metadata.
+      allOf:
+        - $ref: "#/components/schemas/ReferenceRequirementsExtraction"
+        - type: object
+          properties:
+            extraction_source:
+              type: string
+              enum:
+                - documents
+                - description
+            documents_used:
+              type: array
+              items:
+                type: string
+          required:
+            - extraction_source
+            - documents_used
+      title: ReferenceRequirementsExtractionResponse
+    ReferenceBestMatch:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        match_factors:
+          type: object
+          properties:
+            domain:
+              type: number
+            budget:
+              type: number
+            recency:
+              type: number
+            region:
+              type: number
+            donor:
+              type: number
+          additionalProperties: true
+        consortium_coverage:
+          type: boolean
+          default: false
+      required:
+        - id
+        - title
+        - match_score
+        - match_factors
+      title: ReferenceBestMatch
+    RequirementMatch:
+      type: object
+      properties:
+        domain:
+          type: string
+        mandatory:
+          type: boolean
+        best_matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferenceBestMatch"
+        status:
+          type: string
+          enum:
+            - matched
+            - partial
+            - gap
+        coverage_count:
+          type: integer
+          description: Count of matches exceeding threshold (>0.4).
+        gap_note:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - domain
+        - mandatory
+        - best_matches
+        - status
+        - coverage_count
+      title: RequirementMatch
+    ReferenceGapEntry:
+      type: object
+      properties:
+        domain:
+          type: string
+        mandatory:
+          type: boolean
+        severity:
+          type: string
+          enum:
+            - high
+            - low
+      required:
+        - domain
+        - mandatory
+        - severity
+      title: ReferenceGapEntry
+    ReferenceMatchResult:
+      type: object
+      description: Result of deterministic reference match fitness scoring.
+      properties:
+        reference_match_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Overall weighted score (4 decimal places).
+        requirement_matches:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequirementMatch"
+        gaps:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferenceGapEntry"
+        consortium_note:
+          anyOf:
+            - type: string
+            - type: "null"
+        message:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - reference_match_score
+        - requirement_matches
+        - gaps
+      title: ReferenceMatchResult
+    ExclusionCriterion:
+      type: object
+      properties:
+        criterion:
+          type: string
+        category:
+          type: string
+          enum:
+            - financial
+            - legal
+            - experience
+            - accreditation
+            - geographic
+            - consortium
+            - capacity
+        assessment:
+          type: string
+          enum:
+            - pass
+            - fail
+            - uncertain
+        confidence:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+        reason:
+          type: string
+      required:
+        - criterion
+        - category
+        - assessment
+        - confidence
+        - reason
+      title: ExclusionCriterion
+    ExclusionResult:
+      type: object
+      description: Result of exclusion criteria evaluation against company profile.
+      properties:
+        criteria:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExclusionCriterion"
+        excluded:
+          type: boolean
+          description: True if any criterion has assessment=fail with high confidence.
+        exclusion_reasons:
+          type: array
+          items:
+            type: string
+          description: Criteria that triggered exclusion (fail + high confidence).
+        uncertain_flags:
+          type: array
+          items:
+            type: string
+          description: Criteria with assessment=uncertain.
+        extraction_confidence:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+      required:
+        - criteria
+        - excluded
+        - exclusion_reasons
+        - uncertain_flags
+        - extraction_confidence
+      title: ExclusionResult
+    ExclusionResultResponse:
+      type: object
+      description: Response from POST check-exclusion, includes extraction metadata.
+      allOf:
+        - $ref: "#/components/schemas/ExclusionResult"
+        - type: object
+          properties:
+            extraction_source:
+              type: string
+              enum:
+                - documents
+                - description
+            documents_used:
+              type: array
+              items:
+                type: string
+          required:
+            - extraction_source
+            - documents_used
+      title: ExclusionResultResponse
     ValidationError:
       properties:
         loc:
           items:
             anyOf:
-            - type: string
-            - type: integer
+              - type: string
+              - type: integer
           type: array
           title: Location
         msg:
@@ -2237,7 +2836,7 @@ components:
           title: Context
       type: object
       required:
-      - loc
-      - msg
-      - type
+        - loc
+        - msg
+        - type
       title: ValidationError
